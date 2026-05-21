@@ -1,0 +1,5 @@
+{
+  "vercelBackendDomain": "your-backend-name.vercel.app",
+  "webShellUrl": "app://root/index.html",
+  "requiredAssets": []
+}
