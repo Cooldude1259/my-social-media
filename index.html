@@ -112,56 +112,23 @@
       }
 
       h1 {
-        animation: floatUp 3s ease-in-out infinite;
+        animation: gentleFloat 6s ease-in-out infinite;
       }
 
       p {
-        animation: floatIn 4s ease-in-out infinite;
-      }
-
-      iframe {
-        animation: floatInFrame 3.5s ease-in-out infinite;
+        animation: gentleFloat 7s ease-in-out infinite;
       }
 
       button {
-        animation: floatButton 2.5s ease-in-out infinite;
+        animation: gentleFloat 5s ease-in-out infinite;
       }
 
-      @keyframes floatUp {
+      @keyframes gentleFloat {
         0%, 100% {
           transform: translateY(0px);
         }
         50% {
-          transform: translateY(-15px);
-        }
-      }
-
-      @keyframes floatIn {
-        0%, 100% {
-          transform: translateY(0px);
-          opacity: 0.95;
-        }
-        50% {
-          transform: translateY(-10px);
-          opacity: 1;
-        }
-      }
-
-      @keyframes floatInFrame {
-        0%, 100% {
-          transform: translateY(0px) scaleY(1);
-        }
-        50% {
-          transform: translateY(-12px) scaleY(1.02);
-        }
-      }
-
-      @keyframes floatButton {
-        0%, 100% {
-          transform: translateY(0px) scale(1);
-        }
-        50% {
-          transform: translateY(-8px) scale(1.05);
+          transform: translateY(-8px);
         }
       }
 
