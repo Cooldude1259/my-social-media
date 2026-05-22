@@ -12,10 +12,102 @@
         color: white;
         background-color: black;
         font-family: "Quicksand", sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Animated blob styles */
+      .blob-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+      }
+
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.3;
+        mix-blend-mode: screen;
+      }
+
+      .blob1 {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        top: 10%;
+        left: 10%;
+        animation: float1 15s infinite ease-in-out;
+      }
+
+      .blob2 {
+        width: 250px;
+        height: 250px;
+        background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+        top: 60%;
+        right: 10%;
+        animation: float2 12s infinite ease-in-out;
+      }
+
+      .blob3 {
+        width: 280px;
+        height: 280px;
+        background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+        bottom: 10%;
+        left: 50%;
+        animation: float3 18s infinite ease-in-out;
+      }
+
+      @keyframes float1 {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+          transform: translate(-20px, 30px) scale(0.9);
+        }
+      }
+
+      @keyframes float2 {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(-40px, 40px) scale(0.9);
+        }
+        66% {
+          transform: translate(30px, -30px) scale(1.1);
+        }
+      }
+
+      @keyframes float3 {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(50px, 20px) scale(1.05);
+        }
+        66% {
+          transform: translate(-30px, -40px) scale(0.95);
+        }
       }
     </style>
   </head>
   <body>
+    <div class="blob-container">
+      <div class="blob blob1"></div>
+      <div class="blob blob2"></div>
+      <div class="blob blob3"></div>
+    </div>
+
     <h1 style="text-align: center;">THE FUTURE OF SOCIAL MEDIA</h1>
     <p>The future will be coming soon, but patience is <x style="font-family: 'Orbitron', sans-serif;">ALWAYS</x> key.</p>
     <iframe width="100%" src="https://bmfbnydcanksjwquljzb.supabase.co/functions/v1/proxy-api?targetUrl=https://admin-case-app-discord.vercel.app/index.html&responseType=html" title="Vercel App"></iframe>
@@ -25,7 +117,7 @@
     <p>Note, this button will not let you return.</p>
 
     <h1 style="text-align: center;">The Plan for The Future</h1>
-    <p>The future of this app will be created, but we are planning on a social media called <x style="font-faminly: 'Orbitron', sans-serif;">ConnectEd</x>, a school focused social media that allows everyone to connect and communicate, and learn from others experiences (as to not make teachers mad from repeated mistakes from different classrooms).</p>
+    <p>The future of this app will be created, but we are planning on a social media called <x style="font-faminly: 'Orbitron', sans-serif;">ConnectEd</x>, a school focused social media that allows ev[...]</p>
 
   </body>
 </html>
