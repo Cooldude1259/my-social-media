@@ -1,5 +1,5 @@
 {
-  "vercelBackendDomain": "your-backend-name.vercel.app",
+  "vercelBackendDomain": "my-social-media-indol.vercel.app",
   "webShellUrl": "app://root/index.html",
   "requiredAssets": []
 }
