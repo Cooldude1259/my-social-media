@@ -1,0 +1,237 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ConnectEd · App</title>
+    <link rel="stylesheet" href="app://root/style.css" />
+    <style>
+      /* Feed-specific styles (not shared across pages) */
+      .feed {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .composer {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        border-radius: 18px;
+        padding: 20px;
+        margin: 30px 0;
+        backdrop-filter: blur(8px);
+      }
+
+      .composer input,
+      .composer textarea {
+        width: 100%;
+        background: rgba(10, 10, 10, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: white;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-family: "Quicksand", sans-serif;
+        font-size: 15px;
+        margin-bottom: 12px;
+        resize: vertical;
+      }
+
+      .composer input:focus,
+      .composer textarea:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+      }
+
+      .composer button {
+        animation: none;
+        width: 100%;
+      }
+
+      .status {
+        text-align: center;
+        min-height: 20px;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #a78bfa;
+      }
+
+      .post {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+        animation: none;
+      }
+
+      .post-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+        gap: 12px;
+      }
+
+      .post-author {
+        font-weight: 700;
+        color: #c4b5fd;
+      }
+
+      .post-time {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+      }
+
+      .post-content {
+        animation: none;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .empty {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        animation: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blob-container">
+      <div class="blob blob1"></div>
+      <div class="blob blob2"></div>
+      <div class="blob blob3"></div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="feed">
+        <h1 style="text-align: center;">CONNECTED</h1>
+        <p style="text-align: center;">Share something with the <x style="font-family: 'Orbitron', sans-serif;">SCHOOL</x>.</p>
+
+        <form class="composer" id="composer">
+          <input id="author" type="text" maxlength="80" placeholder="Your name (optional)" />
+          <textarea id="content" rows="3" maxlength="2000" placeholder="What do you want to share?" required></textarea>
+          <button type="submit" id="postBtn">Post</button>
+          <div class="status" id="status"></div>
+        </form>
+
+        <div id="posts">
+          <p class="empty">Loading the feed…</p>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px;">
+          <a href="app://root/index.html">
+            <button>Go back home</button>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+      // ConnectEd Cloud project (public publishable key — safe for the browser;
+      // access is governed by Row Level Security policies on the database).
+      const SUPABASE_URL = 'https://bmfbnydcanksjwquljzb.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_qa7veCIyFBL1_BYNFOCsXQ_cfHGKyh0';
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+      const postsEl = document.getElementById('posts');
+      const statusEl = document.getElementById('status');
+      const form = document.getElementById('composer');
+      const authorEl = document.getElementById('author');
+      const contentEl = document.getElementById('content');
+      const postBtn = document.getElementById('postBtn');
+
+      const escapeHtml = (str) =>
+        String(str)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+
+      const formatTime = (ts) => {
+        if (!ts) return '';
+        const d = new Date(ts.includes('Z') || ts.includes('+') ? ts : ts + 'Z');
+        if (isNaN(d)) return '';
+        return d.toLocaleString();
+      };
+
+      function renderPosts(rows) {
+        if (!rows || rows.length === 0) {
+          postsEl.innerHTML = '<p class="empty">No posts yet — be the first to share!</p>';
+          return;
+        }
+        postsEl.innerHTML = rows
+          .map((row) => {
+            const author = row.author && row.author.trim() ? row.author : 'Anonymous';
+            return `
+              <div class="post">
+                <div class="post-head">
+                  <span class="post-author">${escapeHtml(author)}</span>
+                  <span class="post-time">${escapeHtml(formatTime(row.created_at))}</span>
+                </div>
+                <div class="post-content">${escapeHtml(row.content)}</div>
+              </div>`;
+          })
+          .join('');
+      }
+
+      async function loadFeed() {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('id, author, content, created_at')
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (error) {
+          postsEl.innerHTML =
+            '<p class="empty">Could not load the feed. Please try again later.</p>';
+          console.error(error);
+          return;
+        }
+        renderPosts(data);
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const content = contentEl.value.trim();
+        const author = authorEl.value.trim();
+        if (!content) return;
+
+        postBtn.disabled = true;
+        statusEl.textContent = 'Posting…';
+
+        const { error } = await supabase
+          .from('messages')
+          .insert({ author: author || null, content });
+
+        postBtn.disabled = false;
+
+        if (error) {
+          statusEl.textContent = 'Something went wrong. Please try again.';
+          console.error(error);
+          return;
+        }
+
+        contentEl.value = '';
+        statusEl.textContent = 'Posted!';
+        setTimeout(() => (statusEl.textContent = ''), 2000);
+        loadFeed();
+      });
+
+      // Live updates: refresh the feed whenever a new message is inserted.
+      supabase
+        .channel('public:messages')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages' },
+          () => loadFeed()
+        )
+        .subscribe();
+
+      loadFeed();
+    </script>
+  </body>
+</html>
