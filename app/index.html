@@ -82,6 +82,13 @@
         white-space: nowrap;
       }
 
+      .post-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 17px;
+        margin-bottom: 6px;
+        animation: none;
+      }
+
       .post-content {
         animation: none;
         white-space: pre-wrap;
@@ -108,8 +115,9 @@
         <p style="text-align: center;">Share something with the <x style="font-family: 'Orbitron', sans-serif;">SCHOOL</x>.</p>
 
         <form class="composer" id="composer">
-          <input id="author" type="text" maxlength="80" placeholder="Your name (optional)" />
-          <textarea id="content" rows="3" maxlength="2000" placeholder="What do you want to share?" required></textarea>
+          <input id="author" type="text" maxlength="80" placeholder="Your name" required />
+          <input id="title" type="text" maxlength="200" placeholder="Title (optional)" />
+          <textarea id="content" rows="3" maxlength="4000" placeholder="What do you want to share?" required></textarea>
           <button type="submit" id="postBtn">Post</button>
           <div class="status" id="status"></div>
         </form>
@@ -134,12 +142,16 @@
       const SUPABASE_URL = 'https://bmfbnydcanksjwquljzb.supabase.co';
       const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_qa7veCIyFBL1_BYNFOCsXQ_cfHGKyh0';
 
-      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      // The social-media data model lives in the "social-media-public" schema.
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        db: { schema: 'social-media-public' },
+      });
 
       const postsEl = document.getElementById('posts');
       const statusEl = document.getElementById('status');
       const form = document.getElementById('composer');
       const authorEl = document.getElementById('author');
+      const titleEl = document.getElementById('title');
       const contentEl = document.getElementById('content');
       const postBtn = document.getElementById('postBtn');
 
@@ -153,9 +165,8 @@
 
       const formatTime = (ts) => {
         if (!ts) return '';
-        const d = new Date(ts.includes('Z') || ts.includes('+') ? ts : ts + 'Z');
-        if (isNaN(d)) return '';
-        return d.toLocaleString();
+        const d = new Date(ts);
+        return isNaN(d) ? '' : d.toLocaleString();
       };
 
       function renderPosts(rows) {
@@ -165,13 +176,17 @@
         }
         postsEl.innerHTML = rows
           .map((row) => {
-            const author = row.author && row.author.trim() ? row.author : 'Anonymous';
+            const author = row.Users && row.Users.Name ? row.Users.Name : 'Unknown';
+            const titleHtml = row.title
+              ? `<div class="post-title">${escapeHtml(row.title)}</div>`
+              : '';
             return `
               <div class="post">
                 <div class="post-head">
                   <span class="post-author">${escapeHtml(author)}</span>
                   <span class="post-time">${escapeHtml(formatTime(row.created_at))}</span>
                 </div>
+                ${titleHtml}
                 <div class="post-content">${escapeHtml(row.content)}</div>
               </div>`;
           })
@@ -180,8 +195,8 @@
 
       async function loadFeed() {
         const { data, error } = await supabase
-          .from('messages')
-          .select('id, author, content, created_at')
+          .from('Posts')
+          .select('post-id, title, content, created_at, Users(Name)')
           .order('created_at', { ascending: false })
           .limit(100);
 
@@ -194,42 +209,56 @@
         renderPosts(data);
       }
 
+      // Find the user with this name, or create one, and return their creator-id.
+      async function getOrCreateUser(name) {
+        const { data: existing, error: selErr } = await supabase
+          .from('Users')
+          .select('creator-id')
+          .eq('Name', name)
+          .limit(1);
+        if (selErr) throw selErr;
+        if (existing && existing.length) return existing[0]['creator-id'];
+
+        const { data: created, error: insErr } = await supabase
+          .from('Users')
+          .insert({ Name: name })
+          .select('creator-id')
+          .single();
+        if (insErr) throw insErr;
+        return created['creator-id'];
+      }
+
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        const name = authorEl.value.trim();
+        const title = titleEl.value.trim();
         const content = contentEl.value.trim();
-        const author = authorEl.value.trim();
-        if (!content) return;
+        if (!name || !content) return;
 
         postBtn.disabled = true;
         statusEl.textContent = 'Posting…';
 
-        const { error } = await supabase
-          .from('messages')
-          .insert({ author: author || null, content });
+        try {
+          const creatorId = await getOrCreateUser(name);
+          const { error } = await supabase.from('Posts').insert({
+            title: title || null,
+            content,
+            'creator-id': creatorId,
+          });
+          if (error) throw error;
 
-        postBtn.disabled = false;
-
-        if (error) {
+          contentEl.value = '';
+          titleEl.value = '';
+          statusEl.textContent = 'Posted!';
+          setTimeout(() => (statusEl.textContent = ''), 2000);
+          loadFeed();
+        } catch (err) {
           statusEl.textContent = 'Something went wrong. Please try again.';
-          console.error(error);
-          return;
+          console.error(err);
+        } finally {
+          postBtn.disabled = false;
         }
-
-        contentEl.value = '';
-        statusEl.textContent = 'Posted!';
-        setTimeout(() => (statusEl.textContent = ''), 2000);
-        loadFeed();
       });
-
-      // Live updates: refresh the feed whenever a new message is inserted.
-      supabase
-        .channel('public:messages')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'messages' },
-          () => loadFeed()
-        )
-        .subscribe();
 
       loadFeed();
     </script>
