@@ -87,6 +87,18 @@
       .profile-audiences .label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
       .profile-edit textarea { width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 12px; padding: 10px 12px; font-family: "Quicksand", sans-serif; font-size: 14px; margin: 8px 0; resize: vertical; }
 
+      .announcement {
+        position: relative; border-radius: 16px; padding: 16px 44px 16px 18px; margin: 14px 0;
+        background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.18));
+        border: 1px solid rgba(236,72,153,0.45); box-shadow: 0 0 22px rgba(139,92,246,0.25);
+      }
+      .announcement .ann-label { font-family: "Orbitron", sans-serif; font-size: 11px; letter-spacing: 1px; color: #f9a8d4; margin-bottom: 6px; }
+      .announcement .ann-title { font-family: "Orbitron", sans-serif; font-size: 17px; margin-bottom: 4px; }
+      .announcement .ann-body { white-space: pre-wrap; word-break: break-word; }
+      .announcement .ann-time { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+      .announcement .ann-dismiss { position: absolute; top: 8px; right: 10px; cursor: pointer; color: rgba(255,255,255,0.6); background: none; border: none; font-size: 20px; line-height: 1; }
+      .announcement .ann-dismiss:hover { color: white; }
+
       .empty { text-align: center; color: rgba(255,255,255,0.5); animation: none; }
       .hidden { display: none !important; }
     </style>
@@ -110,6 +122,8 @@
 
         <!-- ===== Home (feed) view ===== -->
         <div id="homeView">
+          <div id="announcements"></div>
+
           <div class="signin-prompt" id="signinPrompt">
             <p>Sign in to post, like, comment and follow.</p>
             <button class="btn-google" id="signInBtn">
@@ -169,7 +183,7 @@
         signinPrompt: $('signinPrompt'), signInBtn: $('signInBtn'), signOutBtn: $('signOutBtn'),
         authUser: $('authUser'), userName: $('userName'),
         homeView: $('homeView'), profileView: $('profileView'), profileBody: $('profileBody'), backBtn: $('backBtn'),
-        tabForYou: $('tabForYou'), tabLatest: $('tabLatest'),
+        tabForYou: $('tabForYou'), tabLatest: $('tabLatest'), announcements: $('announcements'),
       };
 
       let authUser = null, authUserId = null, currentProfile = null;
@@ -299,10 +313,63 @@
         const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
         renderInto(els.posts, data.map((r) => fromRest(r, likedSet, dislikedSet)));
       }
-      function loadFeed() { return feedMode === 'foryou' ? loadForYou() : loadLatest(); }
+      function loadFeed() { loadAnnouncements(); return feedMode === 'foryou' ? loadForYou() : loadLatest(); }
+
+      // ---- Announcements (pinned at the very top of everyone's feed) ----
+      const DISMISS_KEY = 'ce_dismissed_announcements';
+      const dismissed = () => { try { return new Set(JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]')); } catch { return new Set(); } };
+      const dismiss = (id) => { try { const s = dismissed(); s.add(id); localStorage.setItem(DISMISS_KEY, JSON.stringify([...s])); } catch {} };
+
+      async function loadAnnouncements() {
+        const { data, error } = await supabase.from('Announcements')
+          .select('id, title, content, created_at').eq('active', true).order('created_at', { ascending: false }).limit(5);
+        if (error) { console.error(error); return; }
+        const hidden = dismissed();
+        const items = (data || []).filter((a) => !hidden.has(a.id));
+        els.announcements.innerHTML = items.map((a) => `
+          <div class="announcement" data-ann-id="${a.id}">
+            <button class="ann-dismiss" data-act="dismiss-ann" data-ann-id="${a.id}" title="Dismiss">×</button>
+            <div class="ann-label">📢 ANNOUNCEMENT</div>
+            ${a.title ? `<div class="ann-title">${esc(a.title)}</div>` : ''}
+            <div class="ann-body">${esc(a.content)}</div>
+            <div class="ann-time">${esc(fmtTime(a.created_at))}</div>
+          </div>`).join('');
+      }
 
       els.tabForYou.addEventListener('click', () => { feedMode = 'foryou'; els.tabForYou.classList.add('active'); els.tabLatest.classList.remove('active'); loadFeed(); });
       els.tabLatest.addEventListener('click', () => { feedMode = 'latest'; els.tabLatest.classList.add('active'); els.tabForYou.classList.remove('active'); loadFeed(); });
+
+      // ---- Secret admin announcement command ----
+      async function handleAdminCommand(content, title) {
+        const lines = content.split('\n');
+        const parts = lines[0].trim().split(/\s+/);
+        const cmd = parts[0];
+        const code = parts[1] || '';
+        if (!code) { els.status.textContent = 'Missing admin code.'; return; }
+        els.postBtn.disabled = true;
+        try {
+          if (cmd === '/clear') {
+            els.status.textContent = 'Clearing…';
+            const { data, error } = await supabase.rpc('clear_announcements', { p_code: code });
+            if (error) throw error;
+            if (!data) { els.status.textContent = '❌ Invalid admin code.'; return; }
+            els.content.value = ''; els.title.value = '';
+            await loadAnnouncements();
+            els.status.innerHTML = '✅ Banner cleared. Your NEW code: <b>' + esc(data) + '</b> (save it!)';
+          } else {
+            const body = lines.slice(1).join('\n').trim();
+            if (!body) { els.status.textContent = 'Put the announcement text on the line(s) below "/announce <code>".'; return; }
+            els.status.textContent = 'Publishing…';
+            const { data, error } = await supabase.rpc('create_announcement', { p_code: code, p_title: title, p_content: body });
+            if (error) throw error;
+            if (!data) { els.status.textContent = '❌ Invalid admin code.'; return; }
+            els.content.value = ''; els.title.value = '';
+            await loadAnnouncements();
+            els.status.innerHTML = '📢 Announcement posted! Your NEW code: <b>' + esc(data) + '</b> (save it!)';
+          }
+        } catch (err) { console.error(err); els.status.textContent = 'Something went wrong.'; }
+        finally { els.postBtn.disabled = false; }
+      }
 
       // ---- Compose (auto-tag after posting) ----
       els.form.addEventListener('submit', async (e) => {
@@ -310,6 +377,15 @@
         const title = els.title.value.trim(), content = els.content.value.trim();
         if (!content) return;
         if (!currentProfile) { els.status.textContent = 'Please sign in first.'; return; }
+
+        // Secret admin command: /announce <code>  (announcement text on the next lines,
+        // title from the Title box). /clear <code> removes the current banner.
+        // The code rotates on every successful use.
+        if (content.startsWith('/announce') || content.startsWith('/clear')) {
+          await handleAdminCommand(content, title);
+          return;
+        }
+
         els.postBtn.disabled = true; els.status.textContent = 'Posting…';
         try {
           const { data, error } = await supabase.from('Posts')
@@ -526,6 +602,7 @@
           }
           if (act === 'follow') return toggleFollow(actEl.dataset.userId, actEl);
           if (act === 'save-bio') return saveBio(actEl.dataset.userId, actEl);
+          if (act === 'dismiss-ann') { dismiss(parseInt(actEl.dataset.annId, 10)); loadAnnouncements(); return; }
           return;
         }
         const authorEl = e.target.closest('[data-user-id]');
