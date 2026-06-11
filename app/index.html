@@ -8,76 +8,61 @@
       /* Feed-specific styles (not shared across pages) */
       .feed { max-width: 640px; margin: 0 auto; }
 
-      .auth-bar {
-        display: flex; justify-content: center; align-items: center;
-        gap: 14px; flex-wrap: wrap; margin: 24px 0 4px;
-      }
+      .auth-bar { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin: 24px 0 4px; }
       .auth-user { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #c4b5fd; cursor: pointer; }
       .avatar {
-        width: 34px; height: 34px; border-radius: 50%;
-        border: 1px solid rgba(139, 92, 246, 0.6); object-fit: cover;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(139, 92, 246, 0.6);
+        object-fit: cover; background: linear-gradient(135deg, #6366f1, #8b5cf6);
         display: inline-flex; align-items: center; justify-content: center;
         font-weight: 700; font-size: 14px; color: white; flex: 0 0 auto;
       }
       .avatar.sm { width: 26px; height: 26px; font-size: 12px; }
 
-      .btn-secondary {
-        animation: none; padding: 8px 18px; font-size: 14px;
-        background: rgba(255, 255, 255, 0.08);
-      }
+      .btn-secondary { animation: none; padding: 8px 18px; font-size: 14px; background: rgba(255, 255, 255, 0.08); }
       .btn-secondary:hover { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
 
-      .btn-google {
-        animation: none; display: inline-flex; align-items: center; gap: 10px;
-        background: #ffffff; color: #1f2937;
-      }
+      .btn-google { animation: none; display: inline-flex; align-items: center; gap: 10px; background: #ffffff; color: #1f2937; }
       .btn-google:hover { background: #f1f1f1; box-shadow: 0 0 20px rgba(255, 255, 255, 0.25); }
       .btn-google svg { width: 18px; height: 18px; }
 
-      .composer {
-        background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(139, 92, 246, 0.35);
-        border-radius: 18px; padding: 20px; margin: 20px 0 30px; backdrop-filter: blur(8px);
-      }
+      .feed-toggle { display: flex; justify-content: center; gap: 8px; margin: 18px 0 4px; }
+      .feed-toggle button { animation: none; padding: 8px 20px; font-size: 14px; background: rgba(255,255,255,0.08); }
+      .feed-toggle button.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+      .feed-toggle button:hover { box-shadow: none; }
+
+      .composer { background: rgba(255,255,255,0.04); border: 1px solid rgba(139,92,246,0.35); border-radius: 18px; padding: 20px; margin: 18px 0 24px; backdrop-filter: blur(8px); }
       .composer input, .composer textarea {
-        width: 100%; background: rgba(10, 10, 10, 0.6); border: 1px solid rgba(255, 255, 255, 0.15);
+        width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
         color: white; border-radius: 12px; padding: 12px 14px; font-family: "Quicksand", sans-serif;
         font-size: 15px; margin-bottom: 12px; resize: vertical;
       }
-      .composer input:focus, .composer textarea:focus {
-        outline: none; border-color: #8b5cf6; box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
-      }
+      .composer input:focus, .composer textarea:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 12px rgba(139,92,246,0.4); }
       .composer button { animation: none; width: 100%; }
       .status { text-align: center; min-height: 20px; margin-top: 10px; font-size: 14px; color: #a78bfa; }
 
-      .signin-prompt {
-        text-align: center; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px; padding: 24px 20px; margin: 20px 0 30px; animation: none;
-      }
+      .signin-prompt { text-align: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 24px 20px; margin: 18px 0 24px; animation: none; }
       .signin-prompt p { animation: none; margin-bottom: 14px; }
 
-      .post {
-        background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; animation: none;
-      }
+      .post { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; animation: none; }
       .post-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 12px; }
       .post-author { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #c4b5fd; cursor: pointer; }
       .post-author.nolink { cursor: default; }
-      .post-time { font-size: 12px; color: rgba(255, 255, 255, 0.45); white-space: nowrap; }
+      .post-time { font-size: 12px; color: rgba(255,255,255,0.45); white-space: nowrap; }
       .post-title { font-family: "Orbitron", sans-serif; font-size: 17px; margin-bottom: 6px; animation: none; }
       .post-content { animation: none; white-space: pre-wrap; word-break: break-word; }
 
-      .post-actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
-      .act {
-        animation: none; background: rgba(255, 255, 255, 0.06); padding: 6px 12px; font-size: 13px;
-        border-radius: 20px; display: inline-flex; gap: 6px; align-items: center;
-      }
-      .act:hover { background: rgba(255, 255, 255, 0.14); box-shadow: none; }
-      .act.like.on { background: rgba(236, 72, 153, 0.22); color: #f9a8d4; }
-      .act.del { margin-left: auto; background: rgba(239, 68, 68, 0.14); color: #fca5a5; }
-      .act.del:hover { background: rgba(239, 68, 68, 0.28); }
+      .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .tag { font-size: 11px; padding: 3px 10px; border-radius: 12px; background: rgba(139,92,246,0.18); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
 
-      .comments { margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px; }
+      .post-actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+      .act { animation: none; background: rgba(255,255,255,0.06); padding: 6px 12px; font-size: 13px; border-radius: 20px; display: inline-flex; gap: 6px; align-items: center; }
+      .act:hover { background: rgba(255,255,255,0.14); box-shadow: none; }
+      .act.like.on { background: rgba(236,72,153,0.22); color: #f9a8d4; }
+      .act.dislike.on { background: rgba(99,102,241,0.28); color: #c7d2fe; }
+      .act.del { margin-left: auto; background: rgba(239,68,68,0.14); color: #fca5a5; }
+      .act.del:hover { background: rgba(239,68,68,0.28); }
+
+      .comments { margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
       .comment { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; font-size: 14px; }
       .comment .c-body { flex: 1; }
       .comment .c-author { font-weight: 700; color: #c4b5fd; cursor: pointer; }
@@ -87,39 +72,28 @@
       .comment .c-del { animation: none; background: none; padding: 2px 8px; color: #fca5a5; font-size: 16px; line-height: 1; }
       .comment .c-del:hover { background: rgba(239,68,68,0.2); box-shadow: none; }
       .comment-form { display: flex; gap: 8px; margin-top: 8px; }
-      .comment-form input {
-        flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
-        color: white; border-radius: 20px; padding: 8px 14px; font-family: "Quicksand", sans-serif; font-size: 14px;
-      }
+      .comment-form input { flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 20px; padding: 8px 14px; font-family: "Quicksand", sans-serif; font-size: 14px; }
       .comment-form input:focus { outline: none; border-color: #8b5cf6; }
       .comment-form button { animation: none; padding: 8px 16px; font-size: 13px; }
 
-      /* Profile view */
       .profile { animation: none; }
-      .profile-card {
-        background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(139, 92, 246, 0.3);
-        border-radius: 18px; padding: 22px; margin: 16px 0 24px; text-align: center;
-      }
+      .profile-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(139,92,246,0.3); border-radius: 18px; padding: 22px; margin: 16px 0 24px; text-align: center; }
       .profile-card .avatar { width: 72px; height: 72px; font-size: 28px; margin: 0 auto 12px; }
       .profile-name { font-family: "Orbitron", sans-serif; font-size: 20px; margin-bottom: 6px; }
       .profile-bio { color: rgba(255,255,255,0.8); margin: 8px 0; white-space: pre-wrap; }
       .profile-stats { display: flex; justify-content: center; gap: 24px; margin: 14px 0; color: #c4b5fd; }
       .profile-stats b { display: block; font-size: 18px; }
-      .profile-edit textarea {
-        width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
-        color: white; border-radius: 12px; padding: 10px 12px; font-family: "Quicksand", sans-serif;
-        font-size: 14px; margin: 8px 0; resize: vertical;
-      }
+      .profile-audiences { margin: 10px 0; }
+      .profile-audiences .label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+      .profile-edit textarea { width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 12px; padding: 10px 12px; font-family: "Quicksand", sans-serif; font-size: 14px; margin: 8px 0; resize: vertical; }
 
-      .empty { text-align: center; color: rgba(255, 255, 255, 0.5); animation: none; }
+      .empty { text-align: center; color: rgba(255,255,255,0.5); animation: none; }
       .hidden { display: none !important; }
     </style>
   </head>
   <body>
     <div class="blob-container">
-      <div class="blob blob1"></div>
-      <div class="blob blob2"></div>
-      <div class="blob blob3"></div>
+      <div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div>
     </div>
 
     <div class="content-wrapper">
@@ -127,18 +101,15 @@
         <h1 style="text-align: center;">CONNECTED</h1>
         <p style="text-align: center;">Share something with the <x style="font-family: 'Orbitron', sans-serif;">SCHOOL</x>.</p>
 
-        <!-- Auth state -->
         <div class="auth-bar">
           <div class="auth-user hidden" id="authUser" title="View your profile">
-            <span class="avatar sm" id="userAvatar"></span>
-            <span id="userName"></span>
+            <span class="avatar sm" id="userAvatar"></span><span id="userName"></span>
           </div>
           <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
         </div>
 
         <!-- ===== Home (feed) view ===== -->
         <div id="homeView">
-          <!-- Signed-out prompt -->
           <div class="signin-prompt" id="signinPrompt">
             <p>Sign in to post, like, comment and follow.</p>
             <button class="btn-google" id="signInBtn">
@@ -152,13 +123,17 @@
             </button>
           </div>
 
-          <!-- Composer (only usable when signed in) -->
           <form class="composer hidden" id="composer">
             <input id="title" type="text" maxlength="200" placeholder="Title (optional)" />
             <textarea id="content" rows="3" maxlength="4000" placeholder="What do you want to share?" required></textarea>
             <button type="submit" id="postBtn">Post</button>
             <div class="status" id="status"></div>
           </form>
+
+          <div class="feed-toggle">
+            <button id="tabForYou" class="active">For You</button>
+            <button id="tabLatest">Latest</button>
+          </div>
 
           <div id="posts"><p class="empty">Loading the feed…</p></div>
         </div>
@@ -187,56 +162,43 @@
       });
 
       const NATIVE_AUTH = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nativeAuth);
-
       const $ = (id) => document.getElementById(id);
       const els = {
         posts: $('posts'), status: $('status'), form: $('composer'),
         title: $('title'), content: $('content'), postBtn: $('postBtn'),
         signinPrompt: $('signinPrompt'), signInBtn: $('signInBtn'), signOutBtn: $('signOutBtn'),
-        authUser: $('authUser'), userName: $('userName'), userAvatar: $('userAvatar'),
+        authUser: $('authUser'), userName: $('userName'),
         homeView: $('homeView'), profileView: $('profileView'), profileBody: $('profileBody'), backBtn: $('backBtn'),
+        tabForYou: $('tabForYou'), tabLatest: $('tabLatest'),
       };
 
-      // ---- State ----
-      let authUser = null;        // Supabase auth user
-      let authUserId = null;      // auth uuid
-      let currentProfile = null;  // { 'creator-id', Name } for the signed-in user
+      let authUser = null, authUserId = null, currentProfile = null;
+      let feedMode = 'foryou'; // 'foryou' | 'latest'
 
       // ---- Utils ----
-      const esc = (s) => String(s)
-        .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+      const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
       const fmtTime = (ts) => { if (!ts) return ''; const d = new Date(ts); return isNaN(d) ? '' : d.toLocaleString(); };
       const initial = (name) => (name && name.trim() ? name.trim()[0].toUpperCase() : '?');
-      const avatarHtml = (url, name, cls = '') =>
-        url
-          ? `<img class="avatar ${cls}" src="${esc(url)}" alt="" />`
-          : `<span class="avatar ${cls}">${esc(initial(name))}</span>`;
+      const avatarHtml = (url, name, cls='') => url ? `<img class="avatar ${cls}" src="${esc(url)}" alt="" />` : `<span class="avatar ${cls}">${esc(initial(name))}</span>`;
       const cnt = (rel) => (Array.isArray(rel) && rel[0] ? rel[0].count : 0);
+      const setCount = (el, delta) => { el.textContent = Math.max(0, (parseInt(el.textContent, 10) || 0) + delta); };
 
       // ---- Auth ----
-      window.onNativeAuth = async (accessToken, refreshToken) => {
-        const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-        if (error) console.error('setSession failed', error);
-      };
+      window.onNativeAuth = async (a, r) => { const { error } = await supabase.auth.setSession({ access_token: a, refresh_token: r }); if (error) console.error(error); };
       async function signIn() {
         if (NATIVE_AUTH) { window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signIn' }); return; }
         const redirectTo = window.location.href.split('#')[0].split('?')[0];
         const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-        if (error) console.error('signInWithOAuth failed', error);
+        if (error) console.error(error);
       }
-      async function signOut() {
-        await supabase.auth.signOut();
-        if (NATIVE_AUTH) window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signOut' });
-      }
+      async function signOut() { await supabase.auth.signOut(); if (NATIVE_AUTH) window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signOut' }); }
 
       async function ensureProfile(user) {
         const { data, error } = await supabase.from('Users').select('"creator-id", Name').eq('user_id', user.id).limit(1);
         if (error) throw error;
         if (data && data.length) return data[0];
         const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Member';
-        const avatar = user.user_metadata?.avatar_url || null;
-        const ins = await supabase.from('Users').insert({ Name: name, user_id: user.id, avatar_url: avatar })
+        const ins = await supabase.from('Users').insert({ Name: name, user_id: user.id, avatar_url: user.user_metadata?.avatar_url || null })
           .select('"creator-id", Name').single();
         if (ins.error) throw ins.error;
         return ins.data;
@@ -246,8 +208,7 @@
         authUser = session?.user || null;
         authUserId = authUser?.id || null;
         if (authUser) {
-          try { currentProfile = await ensureProfile(authUser); }
-          catch (e) { console.error('ensureProfile failed', e); currentProfile = null; }
+          try { currentProfile = await ensureProfile(authUser); } catch (e) { console.error(e); currentProfile = null; }
           const name = currentProfile?.Name || authUser.user_metadata?.full_name || authUser.email || 'Member';
           els.userName.textContent = name;
           els.authUser.querySelector('.avatar')?.remove();
@@ -266,104 +227,154 @@
       }
       supabase.auth.onAuthStateChange((_e, session) => { applyAuthState(session).then(() => loadFeed()); });
 
-      // ---- Feed ----
-      function postCardHtml(post, likedSet) {
-        const u = post.Users || {};
-        const authorName = u.Name || 'Unknown';
-        const authorUid = u.user_id || '';
-        const authorClickable = !!authorUid;
-        const liked = likedSet.has(post['post-id']);
-        const likeCount = cnt(post.Likes);
-        const commentCount = cnt(post.Comments);
-        const own = authUserId && authorUid === authUserId;
-        const titleHtml = post.title ? `<div class="post-title">${esc(post.title)}</div>` : '';
+      // ---- Normalization (both feed sources -> one shape) ----
+      function fromRpc(r) {
+        return {
+          id: r.post_id, title: r.title, content: r.content, created_at: r.created_at,
+          authorName: r.author_name || 'Unknown', authorAvatar: r.author_avatar, authorUserId: r.author_user_id || '',
+          likeCount: r.like_count || 0, commentCount: r.comment_count || 0,
+          liked: !!r.viewer_liked, disliked: !!r.viewer_disliked, tags: r.tags || [],
+        };
+      }
+      function fromRest(r, likedSet, dislikedSet) {
+        const u = r.Users || {};
+        const tags = (r.PostTags || []).map((pt) => pt.Tags?.name).filter(Boolean);
+        return {
+          id: r['post-id'], title: r.title, content: r.content, created_at: r.created_at,
+          authorName: u.Name || 'Unknown', authorAvatar: u.avatar_url, authorUserId: u.user_id || '',
+          likeCount: cnt(r.Likes), commentCount: cnt(r.Comments),
+          liked: likedSet.has(r['post-id']), disliked: dislikedSet.has(r['post-id']), tags,
+        };
+      }
+
+      function postCardHtml(p) {
+        const clickable = !!p.authorUserId;
+        const own = authUserId && p.authorUserId === authUserId;
+        const titleHtml = p.title ? `<div class="post-title">${esc(p.title)}</div>` : '';
+        const tagsHtml = p.tags.length ? `<div class="tags">${p.tags.map((t) => `<span class="tag">#${esc(t)}</span>`).join('')}</div>` : '';
         return `
-          <div class="post" data-post-id="${post['post-id']}">
+          <div class="post" data-post-id="${p.id}">
             <div class="post-head">
-              <span class="post-author ${authorClickable ? '' : 'nolink'}" ${authorClickable ? `data-user-id="${esc(authorUid)}"` : ''}>
-                ${avatarHtml(u.avatar_url, authorName, 'sm')}${esc(authorName)}
+              <span class="post-author ${clickable ? '' : 'nolink'}" ${clickable ? `data-user-id="${esc(p.authorUserId)}"` : ''}>
+                ${avatarHtml(p.authorAvatar, p.authorName, 'sm')}${esc(p.authorName)}
               </span>
-              <span class="post-time">${esc(fmtTime(post.created_at))}</span>
+              <span class="post-time">${esc(fmtTime(p.created_at))}</span>
             </div>
             ${titleHtml}
-            <div class="post-content">${esc(post.content)}</div>
+            <div class="post-content">${esc(p.content)}</div>
+            ${tagsHtml}
             <div class="post-actions">
-              <button class="act like ${liked ? 'on' : ''}" data-act="like" data-post-id="${post['post-id']}">
-                ♥ <span class="like-count">${likeCount}</span>
-              </button>
-              <button class="act" data-act="toggle-comments" data-post-id="${post['post-id']}">
-                💬 <span class="comment-count">${commentCount}</span>
-              </button>
-              ${own ? `<button class="act del" data-act="del-post" data-post-id="${post['post-id']}">🗑 Delete</button>` : ''}
+              <button class="act like ${p.liked ? 'on' : ''}" data-act="like" data-post-id="${p.id}">♥ <span class="like-count">${p.likeCount}</span></button>
+              <button class="act dislike ${p.disliked ? 'on' : ''}" data-act="dislike" data-post-id="${p.id}" title="Not for me">👎</button>
+              <button class="act" data-act="toggle-comments" data-post-id="${p.id}">💬 <span class="comment-count">${p.commentCount}</span></button>
+              ${own ? `<button class="act del" data-act="del-post" data-post-id="${p.id}">🗑 Delete</button>` : ''}
             </div>
-            <div class="comments hidden" data-comments-for="${post['post-id']}"></div>
+            <div class="comments hidden" data-comments-for="${p.id}"></div>
           </div>`;
       }
 
-      async function getLikedSet(postIds) {
+      function renderInto(container, items) {
+        container.innerHTML = items.length ? items.map(postCardHtml).join('') : '<p class="empty">No posts yet — be the first to share!</p>';
+      }
+
+      // Reaction sets (own rows only) for the Latest feed.
+      async function getReactionSet(table, col, postIds) {
         if (!authUserId || postIds.length === 0) return new Set();
-        const { data, error } = await supabase.from('Likes').select('post_id').eq('user_id', authUserId).in('post_id', postIds);
+        const { data, error } = await supabase.from(table).select(col).eq('user_id', authUserId).in(col, postIds);
         if (error) { console.error(error); return new Set(); }
-        return new Set(data.map((r) => r.post_id));
+        return new Set(data.map((r) => r[col]));
       }
 
-      function renderPostsInto(container, rows, likedSet) {
-        if (!rows || rows.length === 0) { container.innerHTML = '<p class="empty">No posts yet — be the first to share!</p>'; return; }
-        container.innerHTML = rows.map((p) => postCardHtml(p, likedSet)).join('');
-      }
+      const REST_SELECT = '"post-id", title, content, created_at, Users(Name, avatar_url, user_id), Likes(count), Comments(count), PostTags(Tags(name))';
 
-      const POST_SELECT = '"post-id", title, content, created_at, Users(Name, avatar_url, user_id), Likes(count), Comments(count)';
-
-      async function loadFeed() {
-        const { data, error } = await supabase.from('Posts').select(POST_SELECT)
-          .order('created_at', { ascending: false }).limit(100);
+      async function loadForYou() {
+        const { data, error } = await supabase.rpc('get_feed', { lim: 100 });
         if (error) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; console.error(error); return; }
-        const likedSet = await getLikedSet(data.map((p) => p['post-id']));
-        renderPostsInto(els.posts, data, likedSet);
+        renderInto(els.posts, (data || []).map(fromRpc));
       }
+      async function loadLatest() {
+        const { data, error } = await supabase.from('Posts').select(REST_SELECT).order('created_at', { ascending: false }).limit(100);
+        if (error) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; console.error(error); return; }
+        const ids = data.map((p) => p['post-id']);
+        const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
+        renderInto(els.posts, data.map((r) => fromRest(r, likedSet, dislikedSet)));
+      }
+      function loadFeed() { return feedMode === 'foryou' ? loadForYou() : loadLatest(); }
 
-      // ---- Compose ----
+      els.tabForYou.addEventListener('click', () => { feedMode = 'foryou'; els.tabForYou.classList.add('active'); els.tabLatest.classList.remove('active'); loadFeed(); });
+      els.tabLatest.addEventListener('click', () => { feedMode = 'latest'; els.tabLatest.classList.add('active'); els.tabForYou.classList.remove('active'); loadFeed(); });
+
+      // ---- Compose (auto-tag after posting) ----
       els.form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const title = els.title.value.trim();
-        const content = els.content.value.trim();
+        const title = els.title.value.trim(), content = els.content.value.trim();
         if (!content) return;
         if (!currentProfile) { els.status.textContent = 'Please sign in first.'; return; }
         els.postBtn.disabled = true; els.status.textContent = 'Posting…';
         try {
-          const { error } = await supabase.from('Posts').insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'] });
+          const { data, error } = await supabase.from('Posts')
+            .insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'] })
+            .select('"post-id"').single();
           if (error) throw error;
           els.content.value = ''; els.title.value = '';
+          els.status.textContent = 'Posted! Tagging…';
+          // Auto-tag (non-blocking); refresh once tags are in.
+          try { await supabase.functions.invoke('tag-post', { body: { post_id: data['post-id'] } }); }
+          catch (tagErr) { console.warn('tagging failed', tagErr); }
           els.status.textContent = 'Posted!'; setTimeout(() => (els.status.textContent = ''), 2000);
           loadFeed();
         } catch (err) { els.status.textContent = 'Something went wrong.'; console.error(err); }
         finally { els.postBtn.disabled = false; }
       });
 
-      // ---- Likes ----
-      async function toggleLike(postId, btn) {
-        if (!authUserId) { alert('Sign in to like posts.'); return; }
-        const liked = btn.classList.contains('on');
-        const countEl = btn.querySelector('.like-count');
-        const n = parseInt(countEl.textContent, 10) || 0;
+      // ---- Likes / Dislikes (dislike count is never shown) ----
+      async function toggleLike(postId, card) {
+        if (!authUserId) return alert('Sign in to react.');
+        const likeBtn = card.querySelector('[data-act="like"]');
+        const disBtn = card.querySelector('[data-act="dislike"]');
+        const countEl = likeBtn.querySelector('.like-count');
         try {
-          if (liked) {
+          if (likeBtn.classList.contains('on')) {
             const { error } = await supabase.from('Likes').delete().eq('post_id', postId).eq('user_id', authUserId);
             if (error) throw error;
-            btn.classList.remove('on'); countEl.textContent = Math.max(0, n - 1);
+            likeBtn.classList.remove('on'); setCount(countEl, -1);
           } else {
             const { error } = await supabase.from('Likes').insert({ post_id: postId, user_id: authUserId });
             if (error) throw error;
-            btn.classList.add('on'); countEl.textContent = n + 1;
+            likeBtn.classList.add('on'); setCount(countEl, +1);
+            if (disBtn.classList.contains('on')) {
+              await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+              disBtn.classList.remove('on');
+            }
           }
-        } catch (err) { console.error('like toggle failed', err); }
+        } catch (err) { console.error('like failed', err); }
+      }
+
+      async function toggleDislike(postId, card) {
+        if (!authUserId) return alert('Sign in to react.');
+        const likeBtn = card.querySelector('[data-act="like"]');
+        const disBtn = card.querySelector('[data-act="dislike"]');
+        const countEl = likeBtn.querySelector('.like-count');
+        try {
+          if (disBtn.classList.contains('on')) {
+            const { error } = await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+            if (error) throw error;
+            disBtn.classList.remove('on');
+          } else {
+            const { error } = await supabase.from('Dislikes').insert({ post_id: postId, user_id: authUserId });
+            if (error) throw error;
+            disBtn.classList.add('on');
+            if (likeBtn.classList.contains('on')) {
+              await supabase.from('Likes').delete().eq('post_id', postId).eq('user_id', authUserId);
+              likeBtn.classList.remove('on'); setCount(countEl, -1);
+            }
+          }
+        } catch (err) { console.error('dislike failed', err); }
       }
 
       // ---- Comments ----
       function commentHtml(c) {
-        const u = c.Users || {};
-        const name = u.Name || 'Unknown';
-        const uid = u.user_id || '';
+        const u = c.Users || {}; const name = u.Name || 'Unknown'; const uid = u.user_id || '';
         const own = authUserId && uid === authUserId;
         return `
           <div class="comment" data-comment-id="${c['comment-id']}">
@@ -376,7 +387,6 @@
             ${own ? `<button class="c-del" data-act="del-comment" data-comment-id="${c['comment-id']}" title="Delete">×</button>` : ''}
           </div>`;
       }
-
       async function loadComments(postId, box) {
         box.innerHTML = '<p class="empty">Loading…</p>';
         const { data, error } = await supabase.from('Comments')
@@ -385,14 +395,10 @@
         if (error) { box.innerHTML = '<p class="empty">Could not load comments.</p>'; console.error(error); return; }
         const list = data.map(commentHtml).join('');
         const formHtml = authUserId
-          ? `<form class="comment-form" data-comment-form="${postId}">
-               <input type="text" maxlength="2000" placeholder="Write a comment…" required />
-               <button type="submit">Reply</button>
-             </form>`
+          ? `<form class="comment-form" data-comment-form="${postId}"><input type="text" maxlength="2000" placeholder="Write a comment…" required /><button type="submit">Reply</button></form>`
           : `<p class="empty">Sign in to comment.</p>`;
         box.innerHTML = (list || '<p class="empty">No comments yet.</p>') + formHtml;
       }
-
       async function addComment(postId, input, box) {
         const content = input.value.trim();
         if (!content || !currentProfile) return;
@@ -400,24 +406,19 @@
         try {
           const { error } = await supabase.from('Comments').insert({ content, creator_id: currentProfile['creator-id'], 'post-id': postId });
           if (error) throw error;
-          await loadComments(postId, box);
-          bumpCommentCount(postId, +1);
-        } catch (err) { console.error('comment failed', err); input.disabled = false; }
+          await loadComments(postId, box); bumpCommentCount(postId, +1);
+        } catch (err) { console.error(err); input.disabled = false; }
       }
-
       async function deleteComment(commentId, postId, box) {
         try {
           const { error } = await supabase.from('Comments').delete().eq('comment-id', commentId);
           if (error) throw error;
-          await loadComments(postId, box);
-          bumpCommentCount(postId, -1);
-        } catch (err) { console.error('delete comment failed', err); }
+          await loadComments(postId, box); bumpCommentCount(postId, -1);
+        } catch (err) { console.error(err); }
       }
-
       function bumpCommentCount(postId, delta) {
         document.querySelectorAll(`[data-post-id="${postId}"]`).forEach((card) => {
-          const span = card.querySelector('.comment-count');
-          if (span) span.textContent = Math.max(0, (parseInt(span.textContent, 10) || 0) + delta);
+          const span = card.querySelector('.comment-count'); if (span) setCount(span, delta);
         });
       }
 
@@ -427,96 +428,74 @@
         try {
           const { error } = await supabase.from('Posts').delete().eq('post-id', postId);
           if (error) throw error;
-          const card = document.querySelector(`.post[data-post-id="${postId}"]`);
-          if (card) card.remove();
-        } catch (err) { console.error('delete post failed', err); }
+          document.querySelector(`.post[data-post-id="${postId}"]`)?.remove();
+        } catch (err) { console.error(err); }
       }
 
-      // ---- Follows / Profiles ----
+      // ---- Follows / Profiles / Audiences ----
       async function toggleFollow(userId, btn) {
-        if (!authUserId) { alert('Sign in to follow people.'); return; }
-        const following = btn.dataset.following === '1';
-        btn.disabled = true;
+        if (!authUserId) return alert('Sign in to follow people.');
+        const following = btn.dataset.following === '1'; btn.disabled = true;
         try {
           if (following) {
             const { error } = await supabase.from('Follows').delete().eq('follower_id', authUserId).eq('following_id', userId);
-            if (error) throw error;
-            btn.dataset.following = '0'; btn.textContent = 'Follow';
+            if (error) throw error; btn.dataset.following = '0'; btn.textContent = 'Follow';
           } else {
             const { error } = await supabase.from('Follows').insert({ follower_id: authUserId, following_id: userId });
-            if (error) throw error;
-            btn.dataset.following = '1'; btn.textContent = 'Following';
+            if (error) throw error; btn.dataset.following = '1'; btn.textContent = 'Following';
           }
-        } catch (err) { console.error('follow toggle failed', err); }
-        finally { btn.disabled = false; }
+        } catch (err) { console.error(err); } finally { btn.disabled = false; }
       }
 
       async function openProfile(userId) {
-        els.homeView.classList.add('hidden');
-        els.profileView.classList.remove('hidden');
+        els.homeView.classList.add('hidden'); els.profileView.classList.remove('hidden');
         els.profileBody.innerHTML = '<p class="empty">Loading profile…</p>';
-
-        const { data: prof, error } = await supabase.from('Users')
-          .select('"creator-id", Name, avatar_url, bio, user_id').eq('user_id', userId).single();
+        const { data: prof, error } = await supabase.from('Users').select('"creator-id", Name, avatar_url, bio, user_id').eq('user_id', userId).single();
         if (error || !prof) { els.profileBody.innerHTML = '<p class="empty">Profile not found.</p>'; return; }
 
-        const [{ count: followers }, { count: following }, mine] = await Promise.all([
+        const isSelf = authUserId && authUserId === userId;
+        const [{ count: followers }, { count: following }, mine, audiencesRes] = await Promise.all([
           supabase.from('Follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
           supabase.from('Follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId),
-          authUserId
-            ? supabase.from('Follows').select('follower_id').eq('follower_id', authUserId).eq('following_id', userId).limit(1)
-            : Promise.resolve({ data: [] }),
+          authUserId ? supabase.from('Follows').select('follower_id').eq('follower_id', authUserId).eq('following_id', userId).limit(1) : Promise.resolve({ data: [] }),
+          isSelf ? supabase.rpc('get_my_audiences', { lim: 8 }) : Promise.resolve({ data: [] }),
         ]);
         const isFollowing = !!(mine.data && mine.data.length);
-        const isSelf = authUserId && authUserId === userId;
+        const audiences = (audiencesRes.data || []).map((a) => a.tag);
 
         let actionHtml = '';
         if (isSelf) {
-          actionHtml = `
-            <div class="profile-edit">
-              <textarea id="bioInput" rows="2" maxlength="300" placeholder="Add a bio…">${esc(prof.bio || '')}</textarea>
-              <button class="btn-secondary" data-act="save-bio" data-user-id="${esc(userId)}">Save bio</button>
-            </div>`;
+          actionHtml = `<div class="profile-edit"><textarea id="bioInput" rows="2" maxlength="300" placeholder="Add a bio…">${esc(prof.bio || '')}</textarea><button class="btn-secondary" data-act="save-bio" data-user-id="${esc(userId)}">Save bio</button></div>`;
         } else if (authUserId) {
           actionHtml = `<button class="${isFollowing ? 'btn-secondary' : ''}" data-act="follow" data-user-id="${esc(userId)}" data-following="${isFollowing ? 1 : 0}">${isFollowing ? 'Following' : 'Follow'}</button>`;
         }
+        const audiencesHtml = (isSelf && audiences.length)
+          ? `<div class="profile-audiences"><div class="label">Your audiences (from what you engage with)</div><div class="tags" style="justify-content:center;">${audiences.map((t) => `<span class="tag">#${esc(t)}</span>`).join('')}</div></div>`
+          : '';
 
         els.profileBody.innerHTML = `
           <div class="profile-card">
             ${avatarHtml(prof.avatar_url, prof.Name)}
             <div class="profile-name">${esc(prof.Name || 'Member')}</div>
             ${prof.bio && !isSelf ? `<div class="profile-bio">${esc(prof.bio)}</div>` : ''}
-            <div class="profile-stats">
-              <span><b>${followers || 0}</b> followers</span>
-              <span><b>${following || 0}</b> following</span>
-            </div>
+            <div class="profile-stats"><span><b>${followers || 0}</b> followers</span><span><b>${following || 0}</b> following</span></div>
+            ${audiencesHtml}
             ${actionHtml}
           </div>
           <h1 style="text-align:center; font-size:18px;">Posts</h1>
           <div id="profilePosts"><p class="empty">Loading…</p></div>`;
 
-        // Their posts
-        const { data: posts } = await supabase.from('Posts').select(POST_SELECT)
-          .eq('creator-id', prof['creator-id']).order('created_at', { ascending: false }).limit(100);
-        const likedSet = await getLikedSet((posts || []).map((p) => p['post-id']));
-        renderPostsInto($('profilePosts'), posts || [], likedSet);
+        const { data: posts } = await supabase.from('Posts').select(REST_SELECT).eq('creator-id', prof['creator-id']).order('created_at', { ascending: false }).limit(100);
+        const ids = (posts || []).map((p) => p['post-id']);
+        const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
+        renderInto($('profilePosts'), (posts || []).map((r) => fromRest(r, likedSet, dislikedSet)));
       }
-
-      function closeProfile() {
-        els.profileView.classList.add('hidden');
-        els.homeView.classList.remove('hidden');
-      }
-
+      function closeProfile() { els.profileView.classList.add('hidden'); els.homeView.classList.remove('hidden'); }
       async function saveBio(userId, btn) {
-        const input = $('bioInput');
-        if (!input) return;
+        const input = $('bioInput'); if (!input) return;
         btn.disabled = true; btn.textContent = 'Saving…';
-        try {
-          const { error } = await supabase.from('Users').update({ bio: input.value.trim() || null }).eq('user_id', userId);
-          if (error) throw error;
-          btn.textContent = 'Saved!'; setTimeout(() => (btn.textContent = 'Save bio'), 1500);
-        } catch (err) { console.error('save bio failed', err); btn.textContent = 'Save bio'; }
-        finally { btn.disabled = false; }
+        try { const { error } = await supabase.from('Users').update({ bio: input.value.trim() || null }).eq('user_id', userId); if (error) throw error; btn.textContent = 'Saved!'; setTimeout(() => (btn.textContent = 'Save bio'), 1500); }
+        catch (err) { console.error(err); btn.textContent = 'Save bio'; } finally { btn.disabled = false; }
       }
 
       // ---- Event delegation ----
@@ -529,10 +508,12 @@
         const actEl = e.target.closest('[data-act]');
         if (actEl) {
           const act = actEl.dataset.act;
-          if (act === 'like') return toggleLike(parseInt(actEl.dataset.postId, 10), actEl);
+          const card = actEl.closest('.post');
+          if (act === 'like') return toggleLike(parseInt(actEl.dataset.postId, 10), card);
+          if (act === 'dislike') return toggleDislike(parseInt(actEl.dataset.postId, 10), card);
           if (act === 'toggle-comments') {
             const postId = parseInt(actEl.dataset.postId, 10);
-            const box = document.querySelector(`.comments[data-comments-for="${postId}"]`);
+            const box = card.querySelector(`.comments[data-comments-for="${postId}"]`);
             if (!box) return;
             if (box.classList.contains('hidden')) { box.classList.remove('hidden'); loadComments(postId, box); }
             else { box.classList.add('hidden'); box.innerHTML = ''; }
@@ -541,8 +522,7 @@
           if (act === 'del-post') return deletePost(parseInt(actEl.dataset.postId, 10));
           if (act === 'del-comment') {
             const box = actEl.closest('.comments');
-            const postId = parseInt(box.dataset.commentsFor, 10);
-            return deleteComment(parseInt(actEl.dataset.commentId, 10), postId, box);
+            return deleteComment(parseInt(actEl.dataset.commentId, 10), parseInt(box.dataset.commentsFor, 10), box);
           }
           if (act === 'follow') return toggleFollow(actEl.dataset.userId, actEl);
           if (act === 'save-bio') return saveBio(actEl.dataset.userId, actEl);
@@ -556,18 +536,11 @@
         const form = e.target.closest('[data-comment-form]');
         if (!form) return;
         e.preventDefault();
-        const postId = parseInt(form.dataset.commentForm, 10);
-        const box = form.closest('.comments');
-        const input = form.querySelector('input');
-        addComment(postId, input, box);
+        addComment(parseInt(form.dataset.commentForm, 10), form.querySelector('input'), form.closest('.comments'));
       });
 
       // ---- Init ----
-      (async () => {
-        const { data } = await supabase.auth.getSession();
-        await applyAuthState(data.session);
-        loadFeed();
-      })();
+      (async () => { const { data } = await supabase.auth.getSession(); await applyAuthState(data.session); loadFeed(); })();
     </script>
   </body>
 </html>
