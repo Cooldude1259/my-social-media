@@ -62,6 +62,110 @@
       .act.del { margin-left: auto; background: rgba(239,68,68,0.14); color: #fca5a5; }
       .act.del:hover { background: rgba(239,68,68,0.28); }
 
+      .post-menu {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        margin-left: auto;
+      }
+      .post-menu-btn { animation: none; background: none; padding: 0; font-size: 18px; line-height: 1; color: rgba(255,255,255,0.6); }
+      .post-menu-btn:hover { color: white; }
+      .post-menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: rgba(20,20,30,0.95);
+        border: 1px solid rgba(139,92,246,0.4);
+        border-radius: 12px;
+        min-width: 140px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        z-index: 1000;
+        display: none;
+      }
+      .post-menu-dropdown.open { display: block; }
+      .post-menu-dropdown button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.8);
+        padding: 10px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .post-menu-dropdown button:first-child { border-radius: 11px 11px 0 0; }
+      .post-menu-dropdown button:last-child { border-radius: 0 0 11px 11px; }
+      .post-menu-dropdown button:hover { background: rgba(139,92,246,0.2); }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open { display: flex; }
+      .modal-dialog {
+        background: rgba(20,20,30,0.95);
+        border: 1px solid rgba(139,92,246,0.4);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      }
+      .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+      .modal-close {
+        float: right;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.6);
+        font-size: 24px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+      }
+      .modal-close:hover { color: white; }
+      .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .modal-body textarea {
+        width: 100%;
+        background: rgba(10,10,10,0.6);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-family: "Quicksand", sans-serif;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 100px;
+      }
+      .modal-body textarea:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 12px rgba(139,92,246,0.4); }
+      .modal-footer {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        justify-content: flex-end;
+      }
+      .modal-footer button { animation: none; padding: 8px 18px; font-size: 14px; }
+      .modal-footer .btn-cancel { background: rgba(255,255,255,0.08); }
+
       .comments { margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
       .comment { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; font-size: 14px; }
       .comment .c-body { flex: 1; }
@@ -72,7 +176,7 @@
       .comment .c-del { animation: none; background: none; padding: 2px 8px; color: #fca5a5; font-size: 16px; line-height: 1; }
       .comment .c-del:hover { background: rgba(239,68,68,0.2); box-shadow: none; }
       .comment-form { display: flex; gap: 8px; margin-top: 8px; }
-      .comment-form input { flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 20px; padding: 8px 14px; font-family: "Quicksand", sans-serif; font-size: 14px; }
+      .comment-form input { flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 20px; padding: 8px 14px; font-family: "Quicksand", sans-serif; font-size: 13px; }
       .comment-form input:focus { outline: none; border-color: #8b5cf6; }
       .comment-form button { animation: none; padding: 8px 16px; font-size: 13px; }
 
@@ -85,7 +189,7 @@
       .profile-stats b { display: block; font-size: 18px; }
       .profile-audiences { margin: 10px 0; }
       .profile-audiences .label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
-      .profile-edit textarea { width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 12px; padding: 10px 12px; font-family: "Quicksand", sans-serif; font-size: 14px; margin: 8px 0; resize: vertical; }
+      .profile-edit textarea { width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 12px; padding: 10px 12px; font-family: "Quicksand", sans-serif; font-size: 14px; }
 
       .announcement {
         position: relative; border-radius: 16px; padding: 16px 44px 16px 18px; margin: 14px 0;
@@ -98,6 +202,29 @@
       .announcement .ann-time { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; }
       .announcement .ann-dismiss { position: absolute; top: 8px; right: 10px; cursor: pointer; color: rgba(255,255,255,0.6); background: none; border: none; font-size: 20px; line-height: 1; }
       .announcement .ann-dismiss:hover { color: white; }
+
+      .my-reports { animation: none; }
+      .my-reports-header { text-align: center; margin-bottom: 24px; }
+      .report-item {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .report-meta { font-size: 12px; color: rgba(255,255,255,0.5); display: flex; gap: 12px; margin-bottom: 8px; }
+      .report-reason { margin-bottom: 8px; }
+      .report-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .report-status.pending { background: rgba(245,158,11,0.2); color: #fcd34d; }
+      .report-status.reviewed { background: rgba(34,197,94,0.2); color: #86efac; }
+      .report-status.dismissed { background: rgba(75,85,99,0.2); color: #cbd5e1; }
+      .report-status.actioned { background: rgba(236,72,153,0.2); color: #f9a8d4; }
 
       .empty { text-align: center; color: rgba(255,255,255,0.5); animation: none; }
       .hidden { display: none !important; }
@@ -117,6 +244,7 @@
           <div class="auth-user hidden" id="authUser" title="View your profile">
             <span class="avatar sm" id="userAvatar"></span><span id="userName"></span>
           </div>
+          <button class="btn-secondary hidden" id="myReportsBtn">My Reports</button>
           <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
         </div>
 
@@ -158,9 +286,35 @@
           <div id="profileBody"></div>
         </div>
 
+        <!-- ===== My Reports view ===== -->
+        <div id="myReportsView" class="my-reports hidden">
+          <button class="btn-secondary" id="backToFeedBtn">← Back to feed</button>
+          <div class="my-reports-header">
+            <h2>My Reports</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 4px;">Track the status of reports you've submitted</p>
+          </div>
+          <div id="reportsList"><p class="empty">No reports yet.</p></div>
+        </div>
+
         <p style="text-align: center; margin-top: 30px;">
           <a href="../index.html"><button>Go back home</button></a>
         </p>
+      </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModal">
+      <div class="modal-dialog">
+        <button class="modal-close" id="reportModalClose">×</button>
+        <div class="modal-header">Report <span id="reportWhat"></span></div>
+        <div class="modal-body">
+          <textarea id="reportReason" maxlength="1000" placeholder="Tell us why you're reporting this (required)"></textarea>
+          <div id="reportStatus" style="text-align:center; min-height:20px; font-size:14px; color:#a78bfa;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" id="reportCancel">Cancel</button>
+          <button id="reportSubmit">Submit Report</button>
+        </div>
       </div>
     </div>
 

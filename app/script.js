@@ -14,10 +14,102 @@
     posts: $('posts'), status: $('status'), form: $('composer'),
     title: $('title'), content: $('content'), postBtn: $('postBtn'),
     signinPrompt: $('signinPrompt'), signInBtn: $('signInBtn'), signOutBtn: $('signOutBtn'),
-    authUser: $('authUser'), userName: $('userName'),
+    authUser: $('authUser'), userName: $('userName'), myReportsBtn: $('myReportsBtn'),
     homeView: $('homeView'), profileView: $('profileView'), profileBody: $('profileBody'), backBtn: $('backBtn'),
     tabForYou: $('tabForYou'), tabLatest: $('tabLatest'), announcements: $('announcements')
   };
+
+  // Report system
+  let reportingPostId = null, reportingCommentId = null, reportingType = null;
+  const reportEls = {
+    modal: $('reportModal'), close: $('reportModalClose'), what: $('reportWhat'),
+    reason: $('reportReason'), status: $('reportStatus'), submit: $('reportSubmit'),
+    cancel: $('reportCancel'), myReportsView: $('myReportsView'), 
+    myReportsList: $('reportsList'), backToFeedBtn: $('backToFeedBtn')
+  };
+
+  function openReportModal(postId, commentId = null) {
+    reportingPostId = postId;
+    reportingCommentId = commentId;
+    reportingType = commentId ? 'comment' : 'post';
+    reportEls.what.textContent = reportingType === 'comment' ? 'comment' : 'post';
+    reportEls.reason.value = '';
+    reportEls.status.textContent = '';
+    reportEls.modal.classList.add('open');
+  }
+  function closeReportModal() {
+    reportEls.modal.classList.remove('open');
+    reportingPostId = null;
+    reportingCommentId = null;
+    reportingType = null;
+  }
+  reportEls.close.addEventListener('click', closeReportModal);
+  reportEls.cancel.addEventListener('click', closeReportModal);
+  reportEls.modal.addEventListener('click', (e) => {
+    if (e.target === reportEls.modal) closeReportModal();
+  });
+
+  reportEls.submit.addEventListener('click', async () => {
+    if (!authUserId) return alert('Sign in to submit a report.');
+    const reason = reportEls.reason.value.trim();
+    if (!reason) return (reportEls.status.textContent = 'Please provide a reason.');
+    reportEls.submit.disabled = true;
+    reportEls.status.textContent = 'Submitting…';
+    try {
+      const { error } = await supabase.from('Reports').insert({
+        reporter_id: authUserId,
+        post_id: reportingPostId || null,
+        comment_id: reportingCommentId || null,
+        reason: reason,
+        status: 'pending',
+      });
+      if (error) throw error;
+      reportEls.status.textContent = '✅ Report submitted. Thank you.';
+      setTimeout(() => closeReportModal(), 2000);
+    } catch (err) {
+      console.error(err);
+      reportEls.status.textContent = 'Error submitting report.';
+    } finally {
+      reportEls.submit.disabled = false;
+    }
+  });
+
+  // My Reports page
+  async function openMyReports() {
+    if (!authUserId) return alert('Sign in to view your reports.');
+    els.homeView.classList.add('hidden');
+    reportEls.myReportsView.classList.remove('hidden');
+    reportEls.myReportsList.innerHTML = '<p class="empty">Loading…</p>';
+    try {
+      const { data, error } = await supabase.from('Reports')
+        .select('id, post_id, comment_id, reason, status, created_at')
+        .eq('reporter_id', authUserId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        reportEls.myReportsList.innerHTML = '<p class="empty">You haven\'t submitted any reports yet.</p>';
+        return;
+      }
+      reportEls.myReportsList.innerHTML = data.map((r) => `
+        <div class="report-item">
+          <div class="report-meta">
+            <span>Report #${r.id}</span>
+            <span>•</span>
+            <span>${esc(fmtTime(r.created_at))}</span>
+          </div>
+          <div class="report-reason"><strong>Reason:</strong> ${esc(r.reason)}</div>
+          <span class="report-status ${r.status}">${r.status}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      reportEls.myReportsList.innerHTML = '<p class="empty">Could not load reports.</p>';
+    }
+  }
+  reportEls.backToFeedBtn.addEventListener('click', () => {
+    reportEls.myReportsView.classList.add('hidden');
+    els.homeView.classList.remove('hidden');
+  });
 
   let authUser = null, authUserId = null, currentProfile = null;
   let feedMode = 'foryou'; // 'foryou' | 'latest'
@@ -61,12 +153,14 @@
       els.authUser.querySelector('.avatar')?.remove();
       els.authUser.insertAdjacentHTML('afterbegin', avatarHtml(authUser.user_metadata?.avatar_url, name, 'sm'));
       els.authUser.classList.remove('hidden');
+      els.myReportsBtn.classList.remove('hidden');
       els.signOutBtn.classList.remove('hidden');
       els.signinPrompt.classList.add('hidden');
       els.form.classList.remove('hidden');
     } else {
       currentProfile = null;
       els.authUser.classList.add('hidden');
+      els.myReportsBtn.classList.add('hidden');
       els.signOutBtn.classList.add('hidden');
       els.signinPrompt.classList.remove('hidden');
       els.form.classList.add('hidden');
@@ -106,6 +200,14 @@
             ${avatarHtml(p.authorAvatar, p.authorName, 'sm')}${esc(p.authorName)}
           </span>
           <span class="post-time">${esc(fmtTime(p.created_at))}</span>
+          <div class="post-menu">
+            <button class="post-menu-btn" data-act="menu-toggle" data-post-id="${p.id}">⋯</button>
+            <div class="post-menu-dropdown" data-menu-for="${p.id}">
+              <button data-act="share">Share</button>
+              <button data-act="bookmark">Bookmark</button>
+              <button data-act="report" data-post-id="${p.id}">Report</button>
+            </div>
+          </div>
         </div>
         ${titleHtml}
         <div class="post-content">${esc(p.content)}</div>
@@ -153,7 +255,7 @@
   const dismissed = () => { try { return new Set(JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]')); } catch { return new Set(); } };
   const dismiss = (id) => { try { const s = dismissed(); s.add(id); localStorage.setItem(DISMISS_KEY, JSON.stringify([...s])); } catch {} };
 
-async function loadAnnouncements() {
+  async function loadAnnouncements() {
     const { data, error } = await supabase.from('Announcements')
       .select('id, title, content, created_at').eq('active', true).order('created_at', { ascending: false }).limit(5);
     if (error) { console.error(error); return; }
@@ -403,15 +505,16 @@ async function loadAnnouncements() {
   async function saveBio(userId, btn) {
     const input = $('bioInput'); if (!input) return;
     btn.disabled = true; btn.textContent = 'Saving…';
-    try { const { error } = await supabase.from('Users').update({ bio: input.value.trim() || null }).eq('user_id', userId); if (error) throw error; btn.textContent = 'Saved!'; setTimeout(() => (btn.textContent = 'Save bio'), 1500); }
+    try { const { error } = await supabase.from('Users').update({ bio: input.value.trim() || null }).eq('user_id', userId); if (error) throw error; btn.textContent = 'Saved!'; setTimeout(() => (btn.textContent = 'Save bio'), 2000); }
     catch (err) { console.error(err); btn.textContent = 'Save bio'; } finally { btn.disabled = false; }
   }
 
   // ---- Event delegation ----
   els.signInBtn.addEventListener('click', signIn);
   els.signOutBtn.addEventListener('click', signOut);
+  els.myReportsBtn.addEventListener('click', openMyReports);
   els.backBtn.addEventListener('click', closeProfile);
-      els.authUser.addEventListener('click', () => { if (authUserId) openProfile(authUserId); });
+  els.authUser.addEventListener('click', () => { if (authUserId) openProfile(authUserId); });
   document.addEventListener('click', (e) => {
     const actEl = e.target.closest('[data-act]');
     if (actEl) {
@@ -432,6 +535,27 @@ async function loadAnnouncements() {
         const box = actEl.closest('.comments');
         return deleteComment(parseInt(actEl.dataset.commentId, 10), parseInt(box.dataset.commentsFor, 10), box);
       }
+      if (act === 'menu-toggle') {
+        const postId = actEl.dataset.postId;
+        const dropdown = document.querySelector(`.post-menu-dropdown[data-menu-for="${postId}"]`);
+        document.querySelectorAll('.post-menu-dropdown.open').forEach((d) => {
+          if (d !== dropdown) d.classList.remove('open');
+        });
+        dropdown.classList.toggle('open');
+        return;
+      }
+      if (act === 'report') {
+        openReportModal(parseInt(actEl.dataset.postId, 10));
+        return;
+      }
+      if (act === 'share') {
+        alert('Share feature coming soon!');
+        return;
+      }
+      if (act === 'bookmark') {
+        alert('Bookmark feature coming soon!');
+        return;
+      }
       if (act === 'follow') return toggleFollow(actEl.dataset.userId, actEl);
       if (act === 'save-bio') return saveBio(actEl.dataset.userId, actEl);
       if (act === 'dismiss-ann') { dismiss(parseInt(actEl.dataset.annId, 10)); loadAnnouncements(); return; }
@@ -446,7 +570,7 @@ async function loadAnnouncements() {
     if (!form) return;
     e.preventDefault();
     addComment(parseInt(form.dataset.commentForm, 10), form.querySelector('input'), form.closest('.comments'));
-});
+  });
 
-// ---- Init ----
-(async () => { const { data } = await supabase.auth.getSession(); await applyAuthState(data.session); loadFeed(); })();
+  // ---- Init ----
+  (async () => { const { data } = await supabase.auth.getSession(); await applyAuthState(data.session); loadFeed(); })();
