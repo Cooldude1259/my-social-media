@@ -203,9 +203,9 @@
           <div class="post-menu">
             <button class="post-menu-btn" data-act="menu-toggle" data-post-id="${p.id}">⋯</button>
             <div class="post-menu-dropdown" data-menu-for="${p.id}">
-              <button data-act="share">Share</button>
-              <button data-act="bookmark">Bookmark</button>
-              <button data-act="report" data-post-id="${p.id}">Report</button>
+              <button data-act="share">💬Share</button>
+              <button data-act="bookmark">📑Bookmark</button>
+              <button data-act="report" data-post-id="${p.id}">📣Report</button>
             </div>
           </div>
         </div>
