@@ -16,7 +16,9 @@
     signinPrompt: $('signinPrompt'), signInBtn: $('signInBtn'), signOutBtn: $('signOutBtn'),
     authUser: $('authUser'), userName: $('userName'), myReportsBtn: $('myReportsBtn'),
     homeView: $('homeView'), profileView: $('profileView'), profileBody: $('profileBody'), backBtn: $('backBtn'),
-    tabForYou: $('tabForYou'), tabLatest: $('tabLatest'), announcements: $('announcements')
+    tabForYou: $('tabForYou'), tabLatest: $('tabLatest'), announcements: $('announcements'),
+    feedToggle: $('feedToggle'), areaStrip: $('areaStrip'), areaSelect: $('areaSelect'),
+    searchToggle: $('searchToggle'), searchBar: $('searchBar'), searchInput: $('searchInput'), searchClear: $('searchClear'),
   };
 
   // Report system
@@ -113,6 +115,10 @@
 
   let authUser = null, authUserId = null, currentProfile = null;
   let feedMode = 'foryou'; // 'foryou' | 'latest'
+  let selectedAreaId = null;
+  let areas = [];
+  let searchActive = false;
+  let _searchTimer = null;
 
   // ---- Utils ----
   const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -194,23 +200,25 @@
       id: r.post_id, title: r.title, content: r.content, created_at: r.created_at,
       authorName: r.author_name || 'Unknown', authorAvatar: r.author_avatar, authorUserId: r.author_user_id || '',
       likeCount: r.like_count || 0, commentCount: r.comment_count || 0,
-      liked: !!r.viewer_liked, disliked: !!r.viewer_disliked, tags: r.tags || [],
+      liked: !!r.viewer_liked, disliked: !!r.viewer_disliked, tags: r.tags || [], area: null,
     };
   }
   function fromRest(r, likedSet, dislikedSet) {
     const u = r.Users || {};
     const tags = (r.PostTags || []).map((pt) => pt.Tags?.name).filter(Boolean);
+    const area = r.Areas ? { id: r.area_id, name: r.Areas.name, emoji: r.Areas.emoji } : null;
     return {
       id: r['post-id'], title: r.title, content: r.content, created_at: r.created_at,
       authorName: u.Name || 'Unknown', authorAvatar: u.avatar_url, authorUserId: u.user_id || '',
       likeCount: cnt(r.Likes), commentCount: cnt(r.Comments),
-      liked: likedSet.has(r['post-id']), disliked: dislikedSet.has(r['post-id']), tags,
+      liked: likedSet.has(r['post-id']), disliked: dislikedSet.has(r['post-id']), tags, area,
     };
   }
 
   function postCardHtml(p) {
     const clickable = !!p.authorUserId;
     const own = authUserId && p.authorUserId === authUserId;
+    const areaHtml = p.area ? `<div><span class="area-badge">${p.area.emoji ? esc(p.area.emoji) + ' ' : ''}${esc(p.area.name)}</span></div>` : '';
     const titleHtml = p.title ? `<div class="post-title">${esc(p.title)}</div>` : '';
     const tagsHtml = p.tags.length ? `<div class="tags">${p.tags.map((t) => `<span class="tag">#${esc(t)}</span>`).join('')}</div>` : '';
     return `
@@ -229,7 +237,7 @@
             </div>
           </div>
         </div>
-        ${titleHtml}
+        ${areaHtml}${titleHtml}
         <div class="post-content">${esc(p.content)}</div>
         ${tagsHtml}
         <div class="post-actions">
@@ -254,7 +262,7 @@
     return new Set(data.map((r) => r[col]));
   }
 
-  const REST_SELECT = '"post-id", title, content, created_at, Users(Name, avatar_url, user_id), Likes(count), Comments(count), PostTags(Tags(name))';
+  const REST_SELECT = '"post-id", title, content, created_at, area_id, Areas(name, emoji), Users(Name, avatar_url, user_id), Likes(count), Comments(count), PostTags(Tags(name))';
 
   async function loadForYou() {
     const { data, error } = await supabase.rpc('get_feed', { lim: 100 });
@@ -262,13 +270,29 @@
     renderInto(els.posts, (data || []).map(fromRpc));
   }
   async function loadLatest() {
-    const { data, error } = await supabase.from('Posts').select(REST_SELECT).order('created_at', { ascending: false }).limit(100);
+    const { data, error } = await supabase.from('Posts').select(REST_SELECT).neq('status', 'removed').order('created_at', { ascending: false }).limit(100);
     if (error) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; console.error(error); return; }
     const ids = data.map((p) => p['post-id']);
     const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
     renderInto(els.posts, data.map((r) => fromRest(r, likedSet, dislikedSet)));
   }
-  function loadFeed() { loadAnnouncements(); return feedMode === 'foryou' ? loadForYou() : loadLatest(); }
+  function loadFeed() {
+    if (searchActive) return;
+    loadAnnouncements();
+    if (selectedAreaId !== null) return loadAreaFeed();
+    return feedMode === 'foryou' ? loadForYou() : loadLatest();
+  }
+
+  async function loadAreaFeed() {
+    els.posts.innerHTML = '<p class="empty">Loading…</p>';
+    const { data, error } = await supabase.from('Posts').select(REST_SELECT)
+      .eq('area_id', selectedAreaId).neq('status', 'removed')
+      .order('created_at', { ascending: false }).limit(100);
+    if (error) { els.posts.innerHTML = '<p class="empty">Could not load this area.</p>'; console.error(error); return; }
+    const ids = (data || []).map((p) => p['post-id']);
+    const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
+    renderInto(els.posts, (data || []).map((r) => fromRest(r, likedSet, dislikedSet)));
+  }
 
   // ---- Announcements (pinned at the very top of everyone's feed) ----
   const DISMISS_KEY = 'ce_dismissed_announcements';
@@ -293,6 +317,148 @@
 
   els.tabForYou.addEventListener('click', () => { feedMode = 'foryou'; els.tabForYou.classList.add('active'); els.tabLatest.classList.remove('active'); loadFeed(); });
   els.tabLatest.addEventListener('click', () => { feedMode = 'latest'; els.tabLatest.classList.add('active'); els.tabForYou.classList.remove('active'); loadFeed(); });
+
+  // ---- Areas ----
+  async function loadAreas() {
+    const { data, error } = await supabase.from('Areas').select('id, name, emoji').order('name');
+    if (error) { console.error('Areas load failed', error); return; }
+    areas = data || [];
+    renderAreaStrip();
+    populateAreaSelect();
+    if (areas.length) els.areaStrip.classList.remove('hidden');
+  }
+
+  function renderAreaStrip() {
+    els.areaStrip.innerHTML =
+      `<button class="area-tab ${selectedAreaId === null ? 'active' : ''}" data-area-id="">All</button>` +
+      areas.map((a) => `<button class="area-tab ${selectedAreaId === a.id ? 'active' : ''}" data-area-id="${a.id}">${a.emoji ? esc(a.emoji) + ' ' : ''}${esc(a.name)}</button>`).join('') +
+      `<button class="suggest-area-btn">+ Suggest area</button>`;
+  }
+
+  function populateAreaSelect() {
+    if (!els.areaSelect) return;
+    els.areaSelect.innerHTML = `<option value="">📌 No area</option>` +
+      areas.map((a) => `<option value="${a.id}">${a.emoji ? a.emoji + ' ' : ''}${esc(a.name)}</option>`).join('');
+  }
+
+  els.areaStrip.addEventListener('click', (e) => {
+    const tab = e.target.closest('.area-tab');
+    if (tab) {
+      selectedAreaId = tab.dataset.areaId ? parseInt(tab.dataset.areaId, 10) : null;
+      renderAreaStrip();
+      loadFeed();
+      return;
+    }
+    if (e.target.closest('.suggest-area-btn')) openSuggestAreaModal();
+  });
+
+  // ---- Search ----
+  function toggleSearch() {
+    if (els.searchBar.classList.contains('hidden')) {
+      els.searchBar.classList.remove('hidden');
+      els.searchInput.focus();
+    } else {
+      clearSearch();
+    }
+  }
+
+  function clearSearch() {
+    els.searchInput.value = '';
+    els.searchBar.classList.add('hidden');
+    if (searchActive) {
+      searchActive = false;
+      els.feedToggle.classList.remove('hidden');
+      if (areas.length) els.areaStrip.classList.remove('hidden');
+      loadFeed();
+    }
+  }
+
+  function handleSearchInput() {
+    clearTimeout(_searchTimer);
+    const q = els.searchInput.value.trim();
+    if (!q) {
+      if (searchActive) {
+        searchActive = false;
+        els.feedToggle.classList.remove('hidden');
+        if (areas.length) els.areaStrip.classList.remove('hidden');
+        loadFeed();
+      }
+      return;
+    }
+    _searchTimer = setTimeout(() => runSearch(q), 350);
+  }
+
+  async function runSearch(q) {
+    searchActive = true;
+    els.feedToggle.classList.add('hidden');
+    els.areaStrip.classList.add('hidden');
+    els.posts.innerHTML = '<p class="empty">Searching…</p>';
+    const [postsRes, usersRes] = await Promise.all([
+      supabase.from('Posts').select(REST_SELECT)
+        .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
+        .neq('status', 'removed').order('created_at', { ascending: false }).limit(30),
+      supabase.from('Users').select('"creator-id", Name, avatar_url, user_id')
+        .ilike('Name', `%${q}%`).limit(8),
+    ]);
+    const posts = postsRes.data || [];
+    const users = usersRes.data || [];
+    const ids = posts.map((p) => p['post-id']);
+    const [likedSet, dislikedSet] = await Promise.all([
+      getReactionSet('Likes', 'post_id', ids),
+      getReactionSet('Dislikes', 'post_id', ids),
+    ]);
+    let html = '';
+    if (users.length) {
+      html += `<div class="search-heading">People</div>` +
+        users.map((u) => `<div class="user-result" data-user-id="${esc(u.user_id)}">${avatarHtml(u.avatar_url, u.Name, 'sm')}<span class="user-result-name">${esc(u.Name || 'Member')}</span></div>`).join('');
+    }
+    if (posts.length) {
+      html += `<div class="search-heading">Posts</div>` +
+        posts.map((r) => postCardHtml(fromRest(r, likedSet, dislikedSet))).join('');
+    }
+    if (!users.length && !posts.length) html = `<p class="empty">No results for "${esc(q)}"</p>`;
+    els.posts.innerHTML = html;
+  }
+
+  els.searchToggle.addEventListener('click', toggleSearch);
+  els.searchClear.addEventListener('click', clearSearch);
+  els.searchInput.addEventListener('input', handleSearchInput);
+  els.searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') clearSearch(); });
+
+  // ---- Suggest area ----
+  const suggestAreaModal = $('suggestAreaModal');
+
+  function openSuggestAreaModal() {
+    $('suggestAreaName').value = '';
+    $('suggestAreaReason').value = '';
+    $('suggestAreaStatus').textContent = '';
+    suggestAreaModal.classList.add('open');
+  }
+  function closeSuggestAreaModal() { suggestAreaModal.classList.remove('open'); }
+
+  $('suggestAreaClose').addEventListener('click', closeSuggestAreaModal);
+  $('suggestAreaCancel').addEventListener('click', closeSuggestAreaModal);
+  suggestAreaModal.addEventListener('click', (e) => { if (e.target === suggestAreaModal) closeSuggestAreaModal(); });
+
+  $('suggestAreaSubmit').addEventListener('click', async () => {
+    const name = $('suggestAreaName').value.trim();
+    if (!name) { $('suggestAreaStatus').textContent = 'Please enter an area name.'; return; }
+    $('suggestAreaSubmit').disabled = true;
+    $('suggestAreaStatus').textContent = 'Submitting…';
+    try {
+      const { error } = await supabase.from('AreaSuggestions').insert({
+        name, reason: $('suggestAreaReason').value.trim() || null, suggested_by: authUserId || null,
+      });
+      if (error) throw error;
+      $('suggestAreaStatus').textContent = '✅ Suggestion submitted! Thanks.';
+      setTimeout(() => closeSuggestAreaModal(), 2000);
+    } catch (err) {
+      console.error(err);
+      $('suggestAreaStatus').textContent = 'Error submitting suggestion.';
+    } finally {
+      $('suggestAreaSubmit').disabled = false;
+    }
+  });
 
   // ---- Secret admin announcement command ----
   async function handleAdminCommand(content, title) {
@@ -343,8 +509,9 @@
 
     els.postBtn.disabled = true; els.status.textContent = 'Posting…';
     try {
+      const areaId = els.areaSelect ? (parseInt(els.areaSelect.value, 10) || null) : null;
       const { data, error } = await supabase.from('Posts')
-        .insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'] })
+        .insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'], area_id: areaId })
         .select('"post-id"').single();
       if (error) throw error;
       els.content.value = ''; els.title.value = '';
@@ -422,7 +589,7 @@
     box.innerHTML = '<p class="empty">Loading…</p>';
     const { data, error } = await supabase.from('Comments')
       .select('"comment-id", content, created_at, Users(Name, avatar_url, user_id)')
-      .eq('post-id', postId).order('created_at', { ascending: true });
+      .eq('post-id', postId).neq('status', 'removed').order('created_at', { ascending: true });
     if (error) { box.innerHTML = '<p class="empty">Could not load comments.</p>'; console.error(error); return; }
     const list = data.map(commentHtml).join('');
     const formHtml = authUserId
@@ -516,7 +683,7 @@
       <h1 style="text-align:center; font-size:18px;">Posts</h1>
       <div id="profilePosts"><p class="empty">Loading…</p></div>`;
 
-    const { data: posts } = await supabase.from('Posts').select(REST_SELECT).eq('creator-id', prof['creator-id']).order('created_at', { ascending: false }).limit(100);
+    const { data: posts } = await supabase.from('Posts').select(REST_SELECT).eq('creator-id', prof['creator-id']).neq('status', 'removed').order('created_at', { ascending: false }).limit(100);
     const ids = (posts || []).map((p) => p['post-id']);
     const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
     renderInto($('profilePosts'), (posts || []).map((r) => fromRest(r, likedSet, dislikedSet)));
@@ -593,4 +760,4 @@
   });
 
   // ---- Init ----
-  (async () => { const { data } = await supabase.auth.getSession(); await applyAuthState(data.session); loadFeed(); })();
+  (async () => { const { data } = await supabase.auth.getSession(); await applyAuthState(data.session); await loadAreas(); loadFeed(); })();

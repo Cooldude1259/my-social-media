@@ -62,6 +62,63 @@
       .act.del { margin-left: auto; background: rgba(239,68,68,0.14); color: #fca5a5; }
       .act.del:hover { background: rgba(239,68,68,0.28); }
 
+      /* Search */
+      .search-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+      #searchInput {
+        flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
+        color: white; border-radius: 20px; padding: 9px 16px;
+        font-family: "Quicksand", sans-serif; font-size: 14px;
+      }
+      #searchInput:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 10px rgba(139,92,246,0.35); }
+      .search-clear, #searchToggle {
+        animation: none; background: rgba(255,255,255,0.08); padding: 8px 12px;
+        border-radius: 20px; font-size: 16px; line-height: 1;
+      }
+      .search-clear:hover, #searchToggle:hover { background: rgba(255,255,255,0.16); box-shadow: none; }
+
+      /* Area strip */
+      .area-strip { display: flex; gap: 6px; overflow-x: auto; padding: 14px 0 4px; scrollbar-width: none; }
+      .area-strip::-webkit-scrollbar { display: none; }
+      .area-tab {
+        animation: none; white-space: nowrap; padding: 7px 14px; font-size: 13px;
+        background: rgba(255,255,255,0.07); border-radius: 20px; flex-shrink: 0;
+      }
+      .area-tab:hover { background: rgba(255,255,255,0.14); box-shadow: none; }
+      .area-tab.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+      .suggest-area-btn {
+        animation: none; white-space: nowrap; flex-shrink: 0;
+        background: none; border: 1px dashed rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.45); padding: 7px 14px; font-size: 12px; border-radius: 20px;
+      }
+      .suggest-area-btn:hover { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); box-shadow: none; }
+
+      /* Area badge on posts */
+      .area-badge {
+        display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 10px;
+        background: rgba(99,102,241,0.2); color: #c4b5fd;
+        border: 1px solid rgba(99,102,241,0.3); margin-bottom: 6px;
+      }
+
+      /* Composer area select */
+      .composer select {
+        width: 100%; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.7); border-radius: 12px; padding: 10px 14px;
+        font-family: "Quicksand", sans-serif; font-size: 14px; margin-bottom: 12px;
+        appearance: none; cursor: pointer;
+      }
+      .composer select:focus { outline: none; border-color: #8b5cf6; }
+      .composer select option { background: #1a1a2e; color: white; }
+
+      /* Search results */
+      .search-heading { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; }
+      .user-result {
+        display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px; margin-bottom: 8px; cursor: pointer;
+      }
+      .user-result:hover { background: rgba(255,255,255,0.08); }
+      .user-result-name { font-weight: 600; color: #c4b5fd; }
+
       #toast {
         position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
         padding: 14px 20px; text-align: center; font-size: 15px; font-weight: 600;
@@ -259,10 +316,17 @@
           </div>
           <button class="btn-secondary hidden" id="myReportsBtn">My Reports</button>
           <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
+          <button id="searchToggle" title="Search">🔍</button>
+        </div>
+
+        <div class="search-bar hidden" id="searchBar">
+          <input id="searchInput" type="text" placeholder="Search posts and people…" autocomplete="off" />
+          <button class="search-clear" id="searchClear">×</button>
         </div>
 
         <!-- ===== Home (feed) view ===== -->
         <div id="homeView">
+          <div class="area-strip hidden" id="areaStrip"></div>
           <div id="announcements"></div>
 
           <div class="signin-prompt" id="signinPrompt">
@@ -280,12 +344,13 @@
 
           <form class="composer hidden" id="composer">
             <input id="title" type="text" maxlength="200" placeholder="Title" />
+            <select id="areaSelect"><option value="">📌 No area</option></select>
             <textarea id="content" rows="3" maxlength="4000" placeholder="What do you want to share?" required></textarea>
             <button type="submit" id="postBtn">Post</button>
             <div class="status" id="status"></div>
           </form>
 
-          <div class="feed-toggle">
+          <div class="feed-toggle" id="feedToggle">
             <button id="tabForYou" class="active">For You</button>
             <button id="tabLatest">Latest</button>
           </div>
@@ -327,6 +392,25 @@
         <div class="modal-footer">
           <button class="btn-cancel" id="reportCancel">Cancel</button>
           <button id="reportSubmit">Submit Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggest Area Modal -->
+    <div class="modal-overlay" id="suggestAreaModal">
+      <div class="modal-dialog">
+        <button class="modal-close" id="suggestAreaClose">×</button>
+        <div class="modal-header">Suggest an Area</div>
+        <div class="modal-body">
+          <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:4px;">Suggestions are reviewed by admins. You'll stay anonymous.</p>
+          <input id="suggestAreaName" type="text" maxlength="50" placeholder="Area name (required)"
+            style="width:100%;background:rgba(10,10,10,0.6);border:1px solid rgba(255,255,255,0.15);color:white;border-radius:12px;padding:10px 14px;font-family:'Quicksand',sans-serif;font-size:14px;" />
+          <textarea id="suggestAreaReason" maxlength="300" placeholder="Why would this be useful? (optional)"></textarea>
+          <div id="suggestAreaStatus" style="text-align:center;min-height:18px;font-size:14px;color:#a78bfa;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" id="suggestAreaCancel">Cancel</button>
+          <button id="suggestAreaSubmit">Submit Suggestion</button>
         </div>
       </div>
     </div>

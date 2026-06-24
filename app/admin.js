@@ -64,8 +64,8 @@ function openConsole() {
 
 // ---- Tabs ----
 function showTab(name) {
-  const map = { reports: 'tabReports', admins: 'tabAdmins', audit: 'tabAudit' };
-  const views = { reports: 'viewReports', admins: 'viewAdmins', audit: 'viewAudit' };
+  const map = { reports: 'tabReports', areas: 'tabAreas', admins: 'tabAdmins', audit: 'tabAudit' };
+  const views = { reports: 'viewReports', areas: 'viewAreas', admins: 'viewAdmins', audit: 'viewAudit' };
   Object.values(map).forEach((id) => $(id).classList.remove('active'));
   Object.values(views).forEach((id) => $(id).classList.add('hidden'));
   $(map[name]).classList.add('active');
@@ -200,10 +200,101 @@ async function loadAudit() {
     <p class="muted" style="font-size:12px;text-align:center;">Append-only & hash-chained. Mirrored to Axiom.</p>`;
 }
 
+// ---- Areas ----
+async function loadAreasAdmin() {
+  const v = $('viewAreas');
+  v.innerHTML = '<div class="glass"><p class="muted">Loading…</p></div>';
+  const [areasRes, suggestionsRes] = await Promise.all([
+    supabase.from('Areas').select('id, name, emoji').order('name'),
+    supabase.from('AreaSuggestions').select('id, name, reason, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
+  ]);
+  const areas = areasRes.data || [];
+  const suggestions = suggestionsRes.data || [];
+
+  const areasList = areas.length
+    ? areas.map((a) => `
+        <div class="admin-row">
+          <div><b>${a.emoji ? esc(a.emoji) + ' ' : ''}${esc(a.name)}</b></div>
+          <button class="btn-danger" data-act="delete-area" data-area-id="${a.id}" style="animation:none;padding:5px 12px;font-size:13px;">Delete</button>
+        </div>`).join('')
+    : '<p class="muted">No areas yet.</p>';
+
+  const suggestionsList = suggestions.length
+    ? suggestions.map((s) => `
+        <div class="glass" style="margin-bottom:10px;">
+          <div><b>${esc(s.name)}</b> <span class="muted" style="font-size:12px;">· ${esc(fmt(s.created_at))}</span></div>
+          ${s.reason ? `<p style="color:rgba(255,255,255,0.6);font-size:13px;margin:6px 0;">${esc(s.reason)}</p>` : ''}
+          <div class="acts">
+            <button class="btn-neutral" data-act="approve-suggestion" data-id="${s.id}" data-name="${esc(s.name)}">✅ Create area</button>
+            <button class="btn-danger" data-act="reject-suggestion" data-id="${s.id}">Reject</button>
+          </div>
+        </div>`).join('')
+    : '<p class="muted">No pending suggestions.</p>';
+
+  v.innerHTML = `
+    <div class="glass">
+      <h3 style="margin-bottom:12px;">Current Areas</h3>
+      ${areasList}
+      <h3 style="margin:18px 0 8px;">Add Area Directly</h3>
+      <div class="find-row">
+        <input id="newAreaEmoji" type="text" placeholder="Emoji" style="width:72px;" maxlength="4" />
+        <input id="newAreaName" type="text" placeholder="Area name" style="flex:1;min-width:120px;" maxlength="50" />
+        <button id="createAreaBtn" style="animation:none;">Add</button>
+      </div>
+      <div class="status" id="areaStatus"></div>
+    </div>
+    <div class="glass">
+      <h3 style="margin-bottom:12px;">Pending Suggestions</h3>
+      ${suggestionsList}
+    </div>`;
+}
+
+async function createArea() {
+  const name = $('newAreaName').value.trim();
+  const emoji = $('newAreaEmoji').value.trim();
+  if (!name) { $('areaStatus').textContent = 'Name required.'; return; }
+  try {
+    const { error } = await supabase.from('Areas').insert({ name, emoji: emoji || null });
+    if (error) throw error;
+    $('areaStatus').textContent = 'Area created!';
+    loadAreasAdmin();
+  } catch (e) { $('areaStatus').textContent = 'Failed: ' + e.message; }
+}
+
+async function deleteArea(areaId) {
+  if (!confirm('Delete this area? Posts in it will become unassigned.')) return;
+  try {
+    const { error } = await supabase.from('Areas').delete().eq('id', areaId);
+    if (error) throw error;
+    loadAreasAdmin();
+  } catch (e) { alert('Failed: ' + e.message); }
+}
+
+async function approveAreaSuggestion(id, name) {
+  try {
+    const [areaRes, updateRes] = await Promise.all([
+      supabase.from('Areas').insert({ name }),
+      supabase.from('AreaSuggestions').update({ status: 'approved' }).eq('id', id),
+    ]);
+    if (areaRes.error) throw areaRes.error;
+    if (updateRes.error) throw updateRes.error;
+    loadAreasAdmin();
+  } catch (e) { alert('Failed: ' + e.message); }
+}
+
+async function rejectAreaSuggestion(id) {
+  try {
+    const { error } = await supabase.from('AreaSuggestions').update({ status: 'rejected' }).eq('id', id);
+    if (error) throw error;
+    loadAreasAdmin();
+  } catch (e) { alert('Failed: ' + e.message); }
+}
+
 // ---- Wiring ----
 $('signInBtn').addEventListener('click', signIn);
 $('signOutBtn').addEventListener('click', signOut);
 $('tabReports').addEventListener('click', () => { showTab('reports'); loadReports(); });
+$('tabAreas').addEventListener('click', () => { showTab('areas'); loadAreasAdmin(); });
 $('tabAdmins').addEventListener('click', () => { showTab('admins'); loadAdmins(); });
 $('tabAudit').addEventListener('click', () => { showTab('audit'); loadAudit(); });
 
@@ -216,8 +307,14 @@ document.addEventListener('click', (e) => {
   if (act === 'reviewed') return resolveReport(el.dataset.id, 'reviewed');
   if (act === 'add-admin') return addAdmin(el.dataset.uid);
   if (act === 'remove-admin') return removeAdmin(el.dataset.uid);
+  if (act === 'delete-area') return deleteArea(el.dataset.areaId);
+  if (act === 'approve-suggestion') return approveAreaSuggestion(el.dataset.id, el.dataset.name);
+  if (act === 'reject-suggestion') return rejectAreaSuggestion(el.dataset.id);
 });
-document.addEventListener('click', (e) => { if (e.target.id === 'findBtn') findUsers(); });
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'findBtn') findUsers();
+  if (e.target.id === 'createAreaBtn') createArea();
+});
 
 supabase.auth.onAuthStateChange((_e, session) => { if (session && !myRole) init(); });
 init();
