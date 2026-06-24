@@ -125,11 +125,51 @@
   // ---- Auth ----
   window.onNativeAuth = async (a, r) => { const { error } = await supabase.auth.setSession({ access_token: a, refresh_token: r }); if (error) console.error(error); };
   async function signIn() {
-    if (NATIVE_AUTH) { window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signIn' }); return; }
+  // (1) Perform OAuth sign in (native or via your modal/redirect)
+    let user = null;
+    if (NATIVE_AUTH) {
+      window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signIn' });
+      // You'll need your native to call window.onNativeAuth() with the session details, as before.
+      return;
+    }
+    // For web/Google OAUTH etc
     const redirectTo = window.location.href.split('#')[0].split('?')[0];
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-    if (error) console.error(error);
+    const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    if (error) {
+      console.error(error);
+      return;
+    }
+    // Wait for the user session to apply. (implementation-dependent)
+    // Here, assume we can fetch user
+    user = supabase.auth.getUser();
+
+    // (2) Check account status via your Flask API
+    if (user && user.id) {
+      try {
+        const res = await fetch(`${API_BASE}/users/${user.id}`);
+        const profile = await res.json();
+
+        // (3) If account is locked, sign out and display message
+        if (profile.account_status === "locked") {
+          await supabase.auth.signOut();
+          alert('Your account has been locked. Please contact support.');
+          return;
+        }
+
+        // If not locked, normal sign-in can proceed
+        applyAuthState(/* your user object/session */);
+        loadFeed();
+
+      } catch (e) {
+        console.error(e);
+        alert("Unable to check account status. Try again later.");
+        await supabase.auth.signOut();
+      }
+    } else {
+      alert("User sign-in failed.");
+    }
   }
+
   async function signOut() { await supabase.auth.signOut(); if (NATIVE_AUTH) window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signOut' }); }
 
   async function ensureProfile(user) {
