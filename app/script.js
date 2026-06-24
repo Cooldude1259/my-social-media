@@ -125,60 +125,24 @@
   // ---- Auth ----
   window.onNativeAuth = async (a, r) => { const { error } = await supabase.auth.setSession({ access_token: a, refresh_token: r }); if (error) console.error(error); };
   async function signIn() {
-  // (1) Perform OAuth sign in (native or via your modal/redirect)
-    let user = null;
     if (NATIVE_AUTH) {
       window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signIn' });
-      // You'll need your native to call window.onNativeAuth() with the session details, as before.
       return;
     }
-    // For web/Google OAUTH etc
     const redirectTo = window.location.href.split('#')[0].split('?')[0];
-    const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-    if (error) {
-      console.error(error);
-      return;
-    }
-    // Wait for the user session to apply. (implementation-dependent)
-    // Here, assume we can fetch user
-    user = supabase.auth.getUser();
-
-    // (2) Check account status via your Flask API
-    if (user && user.id) {
-      try {
-        const res = await fetch(`${API_BASE}/users/${user.id}`);
-        const profile = await res.json();
-
-        // (3) If account is locked, sign out and display message
-        if (profile.account_status === "locked") {
-          await supabase.auth.signOut();
-          alert('Your account has been locked. Please contact support.');
-          return;
-        }
-
-        // If not locked, normal sign-in can proceed
-        applyAuthState(/* your user object/session */);
-        loadFeed();
-
-      } catch (e) {
-        console.error(e);
-        alert("Unable to check account status. Try again later.");
-        await supabase.auth.signOut();
-      }
-    } else {
-      alert("User sign-in failed.");
-    }
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    if (error) console.error(error);
   }
 
   async function signOut() { await supabase.auth.signOut(); if (NATIVE_AUTH) window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signOut' }); }
 
   async function ensureProfile(user) {
-    const { data, error } = await supabase.from('Users').select('"creator-id", Name').eq('user_id', user.id).limit(1);
+    const { data, error } = await supabase.from('Users').select('"creator-id", Name, account_status').eq('user_id', user.id).limit(1);
     if (error) throw error;
     if (data && data.length) return data[0];
     const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Member';
     const ins = await supabase.from('Users').insert({ Name: name, user_id: user.id, avatar_url: user.user_metadata?.avatar_url || null })
-      .select('"creator-id", Name').single();
+      .select('"creator-id", Name, account_status').single();
     if (ins.error) throw ins.error;
     return ins.data;
   }
@@ -187,7 +151,14 @@
     authUser = session?.user || null;
     authUserId = authUser?.id || null;
     if (authUser) {
-      try { currentProfile = await ensureProfile(authUser); } catch (e) { console.error(e); currentProfile = null; }
+      try {
+        currentProfile = await ensureProfile(authUser);
+        if (currentProfile?.account_status === 'locked') {
+          await supabase.auth.signOut();
+          alert('Your account has been locked. Please contact support.');
+          return;
+        }
+      } catch (e) { console.error(e); currentProfile = null; }
       const name = currentProfile?.Name || authUser.user_metadata?.full_name || authUser.email || 'Member';
       els.userName.textContent = name;
       els.authUser.querySelector('.avatar')?.remove();
