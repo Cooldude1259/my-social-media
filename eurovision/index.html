@@ -12,17 +12,32 @@
     </div>
 
     <div class="content-wrapper">
-      <h1 style="text-align: center;">EUROVISION</h1>
-      <p style="text-align: center;">Welcome to our <x style="font-family: 'Orbitron', sans-serif;">EUROVISION</x> landing site!</p>
+      <header class="hero">
+        <h1>EUROVISION</h1>
+        <p>Welcome to our <span style="font-family: 'Orbitron', sans-serif;">EUROVISION</span> landing site.</p>
+      </header>
 
-      <h1 style="text-align: center; margin-top: 60px;">Last 3 eurovision winners!</h1>
-      <p style="text-align: center;">Eurovision, last 3 winners include, Switzerland in 2024, presenting Nemo with the song "The Code". This was followed in 2025 by Austria giving JJ with the song "Wasted Love", and most recently this year, Bulgeria giving us DARA presenting the song BANGARANGA (sorry if you are in australia and you think it is offensive, this is directly the name of the song)</p>
+      <div class="section-grid">
+        <section class="section-card">
+          <h2>Last 3 Eurovision winners</h2>
+          <p>Recent winners include Switzerland in 2024 with Nemo performing “The Code”, Austria in 2025 with JJ and “Wasted Love”, and Bulgaria this year with DARA performing “BANGARANGA”.</p>
+          <div class="media-grid">
+            <iframe src="https://www.youtube.com/embed/CO_qJf-nW0k?si=u8ctk95UvW9WOrq1" title="Nemo - The Code" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/onOex2WXjbA?si=q2nMkp0muVfyjG8P" title="JJ - Wasted Love" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+          <div class="media-grid">
+            <div id="player"></div>
+          </div>
+        </section>
 
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/CO_qJf-nW0k?si=u8ctk95UvW9WOrq1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/onOex2WXjbA?si=q2nMkp0muVfyjG8P" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
-      <div id="player"></div>
+        <section class="section-card">
+          <div class="actions-row">
+            <a class="button-link" href="../index.html">
+              <button>Go back home</button>
+            </a>
+          </div>
+        </section>
+      </div>
 
       <script>
         // 2. This code loads the IFrame Player API code asynchronously.
@@ -69,15 +84,6 @@
           player.stopVideo();
         }
       </script>
-
-
-
-
-      <p style="text-align: center; margin-top: 20px;">
-        <a href="../index.html">
-          <button>Go back home</button>
-        </a>
-      </p>
     </div>
 
   </body>
