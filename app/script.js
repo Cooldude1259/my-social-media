@@ -116,6 +116,15 @@
 
   // ---- Utils ----
   const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+
+  let _toastTimer = null;
+  function showToast(msg, type = 'error', duration = 5000) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { t.className = type; }, duration);
+  }
   const fmtTime = (ts) => { if (!ts) return ''; const d = new Date(ts); return isNaN(d) ? '' : d.toLocaleString(); };
   const initial = (name) => (name && name.trim() ? name.trim()[0].toUpperCase() : '?');
   const avatarHtml = (url, name, cls='') => url ? `<img class="avatar ${cls}" src="${esc(url)}" alt="" />` : `<span class="avatar ${cls}">${esc(initial(name))}</span>`;
@@ -155,7 +164,7 @@
         currentProfile = await ensureProfile(authUser);
         if (currentProfile?.account_status === 'locked') {
           await supabase.auth.signOut();
-          alert('Your account has been locked. Please contact support.');
+          showToast('Your account has been locked. Please contact support.');
           return;
         }
       } catch (e) { console.error(e); currentProfile = null; }
