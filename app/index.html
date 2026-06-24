@@ -6,9 +6,38 @@
     <link rel="stylesheet" href="../style.css" />
     <style>
       /* Feed-specific styles (not shared across pages) */
-      .feed { max-width: 640px; margin: 0 auto; }
+      .feed { max-width: 680px; margin: 0 auto; }
+      .nav-stack {
+        position: sticky;
+        top: 8px;
+        z-index: 20;
+        display: grid;
+        gap: 10px;
+        margin: 18px 0 14px;
+      }
+      .nav-panel {
+        background: rgba(20, 20, 30, 0.82);
+        border: 1px solid rgba(139, 92, 246, 0.42);
+        border-radius: 14px;
+        padding: 10px 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
+      }
+      .nav-panel-label {
+        font-size: 11px;
+        color: rgba(196, 181, 253, 0.75);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+      .nav-panel .auth-bar,
+      .nav-panel .search-bar,
+      .nav-panel .area-strip,
+      .nav-panel .feed-toggle {
+        margin: 0;
+      }
 
-      .auth-bar { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin: 24px 0 4px; }
+      .auth-bar { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
       .auth-user { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #c4b5fd; cursor: pointer; }
       .avatar {
         width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(139, 92, 246, 0.6);
@@ -25,7 +54,7 @@
       .btn-google:hover { background: #f1f1f1; box-shadow: 0 0 20px rgba(255, 255, 255, 0.25); }
       .btn-google svg { width: 18px; height: 18px; }
 
-      .feed-toggle { display: flex; justify-content: center; gap: 8px; margin: 18px 0 4px; }
+      .feed-toggle { display: flex; justify-content: center; gap: 8px; }
       .feed-toggle button { animation: none; padding: 8px 20px; font-size: 14px; background: rgba(255,255,255,0.08); }
       .feed-toggle button.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
       .feed-toggle button:hover { box-shadow: none; }
@@ -63,7 +92,7 @@
       .act.del:hover { background: rgba(239,68,68,0.28); }
 
       /* Search */
-      .search-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+      .search-bar { display: flex; align-items: center; gap: 8px; }
       #searchInput {
         flex: 1; background: rgba(10,10,10,0.6); border: 1px solid rgba(255,255,255,0.15);
         color: white; border-radius: 20px; padding: 9px 16px;
@@ -77,7 +106,7 @@
       .search-clear:hover, #searchToggle:hover { background: rgba(255,255,255,0.16); box-shadow: none; }
 
       /* Area strip */
-      .area-strip { display: flex; gap: 6px; overflow-x: auto; padding: 14px 0 4px; scrollbar-width: none; }
+      .area-strip { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 2px; scrollbar-width: none; }
       .area-strip::-webkit-scrollbar { display: none; }
       .area-tab {
         animation: none; white-space: nowrap; padding: 7px 14px; font-size: 13px;
@@ -295,6 +324,10 @@
 
       .empty { text-align: center; color: rgba(255,255,255,0.5); animation: none; }
       .hidden { display: none !important; }
+      @media (max-width: 640px) {
+        .nav-stack { top: 6px; gap: 8px; }
+        .nav-panel { padding: 10px; }
+      }
     </style>
   </head>
   <body>
@@ -310,23 +343,34 @@
         <h1 style="text-align: center;">CONNECTED</h1>
         <p style="text-align: center;">Share something with the <x style="font-family: 'Orbitron', sans-serif;">SCHOOL</x>.</p>
 
-        <div class="auth-bar">
-          <div class="auth-user hidden" id="authUser" title="View your profile">
-            <span class="avatar sm" id="userAvatar"></span><span id="userName"></span>
+        <div class="nav-stack">
+          <div class="nav-panel">
+            <div class="nav-panel-label">Account</div>
+            <div class="auth-bar">
+              <div class="auth-user hidden" id="authUser" title="View your profile">
+                <span class="avatar sm" id="userAvatar"></span><span id="userName"></span>
+              </div>
+              <button class="btn-secondary hidden" id="myReportsBtn">My Reports</button>
+              <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
+              <button id="searchToggle" title="Search">🔍</button>
+            </div>
           </div>
-          <button class="btn-secondary hidden" id="myReportsBtn">My Reports</button>
-          <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
-          <button id="searchToggle" title="Search">🔍</button>
-        </div>
 
-        <div class="search-bar hidden" id="searchBar">
-          <input id="searchInput" type="text" placeholder="Search posts and people…" autocomplete="off" />
-          <button class="search-clear" id="searchClear">×</button>
+          <div class="nav-panel hidden" id="searchBar">
+            <div class="nav-panel-label">Search</div>
+            <div class="search-bar">
+              <input id="searchInput" type="text" placeholder="Search posts and people…" autocomplete="off" />
+              <button class="search-clear" id="searchClear">×</button>
+            </div>
+          </div>
         </div>
 
         <!-- ===== Home (feed) view ===== -->
         <div id="homeView">
-          <div class="area-strip hidden" id="areaStrip"></div>
+          <div class="nav-panel hidden" id="areaStripWrap">
+            <div class="nav-panel-label">Areas</div>
+            <div class="area-strip hidden" id="areaStrip"></div>
+          </div>
           <div id="announcements"></div>
 
           <div class="signin-prompt" id="signinPrompt">
@@ -350,9 +394,12 @@
             <div class="status" id="status"></div>
           </form>
 
-          <div class="feed-toggle" id="feedToggle">
-            <button id="tabForYou" class="active">For You</button>
-            <button id="tabLatest">Latest</button>
+          <div class="nav-panel">
+            <div class="nav-panel-label">Feed</div>
+            <div class="feed-toggle" id="feedToggle">
+              <button id="tabForYou" class="active">For You</button>
+              <button id="tabLatest">Latest</button>
+            </div>
           </div>
 
           <div id="posts"><p class="empty">Loading the feed…</p></div>

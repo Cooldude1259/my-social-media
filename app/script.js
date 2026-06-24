@@ -17,7 +17,7 @@
     authUser: $('authUser'), userName: $('userName'), myReportsBtn: $('myReportsBtn'),
     homeView: $('homeView'), profileView: $('profileView'), profileBody: $('profileBody'), backBtn: $('backBtn'),
     tabForYou: $('tabForYou'), tabLatest: $('tabLatest'), announcements: $('announcements'),
-    feedToggle: $('feedToggle'), areaStrip: $('areaStrip'), areaSelect: $('areaSelect'),
+    feedToggle: $('feedToggle'), areaStrip: $('areaStrip'), areaStripWrap: $('areaStripWrap'), areaSelect: $('areaSelect'),
     searchToggle: $('searchToggle'), searchBar: $('searchBar'), searchInput: $('searchInput'), searchClear: $('searchClear'),
   };
 
@@ -325,7 +325,10 @@
     areas = data || [];
     renderAreaStrip();
     populateAreaSelect();
-    if (areas.length) els.areaStrip.classList.remove('hidden');
+    if (areas.length) {
+      els.areaStripWrap?.classList.remove('hidden');
+      els.areaStrip.classList.remove('hidden');
+    }
   }
 
   function renderAreaStrip() {
@@ -368,7 +371,10 @@
     if (searchActive) {
       searchActive = false;
       els.feedToggle.classList.remove('hidden');
-      if (areas.length) els.areaStrip.classList.remove('hidden');
+      if (areas.length) {
+        els.areaStripWrap?.classList.remove('hidden');
+        els.areaStrip.classList.remove('hidden');
+      }
       loadFeed();
     }
   }
@@ -380,7 +386,10 @@
       if (searchActive) {
         searchActive = false;
         els.feedToggle.classList.remove('hidden');
-        if (areas.length) els.areaStrip.classList.remove('hidden');
+        if (areas.length) {
+          els.areaStripWrap?.classList.remove('hidden');
+          els.areaStrip.classList.remove('hidden');
+        }
         loadFeed();
       }
       return;
@@ -391,6 +400,7 @@
   async function runSearch(q) {
     searchActive = true;
     els.feedToggle.classList.add('hidden');
+    els.areaStripWrap?.classList.add('hidden');
     els.areaStrip.classList.add('hidden');
     els.posts.innerHTML = '<p class="empty">Searching…</p>';
     const [postsRes, usersRes] = await Promise.all([
