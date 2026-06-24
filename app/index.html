@@ -14,14 +14,20 @@
         display: grid;
         gap: 10px;
         margin: 18px 0 14px;
-      }
-      .nav-panel {
         background: rgba(20, 20, 30, 0.82);
         border: 1px solid rgba(139, 92, 246, 0.42);
         border-radius: 14px;
         padding: 10px 12px;
         backdrop-filter: blur(10px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
+      }
+      .nav-panel {
+        background: none;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        backdrop-filter: none;
+        box-shadow: none;
       }
       .nav-panel-label {
         font-size: 11px;
@@ -325,8 +331,7 @@
       .empty { text-align: center; color: rgba(255,255,255,0.5); animation: none; }
       .hidden { display: none !important; }
       @media (max-width: 640px) {
-        .nav-stack { top: 6px; gap: 8px; }
-        .nav-panel { padding: 10px; }
+        .nav-stack { top: 6px; gap: 8px; padding: 10px; }
       }
     </style>
   </head>
@@ -363,14 +368,23 @@
               <button class="search-clear" id="searchClear">×</button>
             </div>
           </div>
-        </div>
 
-        <!-- ===== Home (feed) view ===== -->
-        <div id="homeView">
           <div class="nav-panel hidden" id="areaStripWrap">
             <div class="nav-panel-label">Areas</div>
             <div class="area-strip hidden" id="areaStrip"></div>
           </div>
+
+          <div class="nav-panel">
+            <div class="nav-panel-label">Feed</div>
+            <div class="feed-toggle" id="feedToggle">
+              <button id="tabForYou" class="active">For You</button>
+              <button id="tabLatest">Latest</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Home (feed) view ===== -->
+        <div id="homeView">
           <div id="announcements"></div>
 
           <div class="signin-prompt" id="signinPrompt">
@@ -393,14 +407,6 @@
             <button type="submit" id="postBtn">Post</button>
             <div class="status" id="status"></div>
           </form>
-
-          <div class="nav-panel">
-            <div class="nav-panel-label">Feed</div>
-            <div class="feed-toggle" id="feedToggle">
-              <button id="tabForYou" class="active">For You</button>
-              <button id="tabLatest">Latest</button>
-            </div>
-          </div>
 
           <div id="posts"><p class="empty">Loading the feed…</p></div>
         </div>

@@ -81,6 +81,7 @@
     if (!authUserId) return alert('Sign in to view your reports.');
     els.homeView.classList.add('hidden');
     reportEls.myReportsView.classList.remove('hidden');
+    syncHomeNavVisibility();
     reportEls.myReportsList.innerHTML = '<p class="empty">Loading…</p>';
     try {
       const { data, error } = await supabase.from('Reports')
@@ -111,6 +112,7 @@
   reportEls.backToFeedBtn.addEventListener('click', () => {
     reportEls.myReportsView.classList.add('hidden');
     els.homeView.classList.remove('hidden');
+    syncHomeNavVisibility();
   });
 
   let authUser = null, authUserId = null, currentProfile = null;
@@ -119,6 +121,22 @@
   let areas = [];
   let searchActive = false;
   let _searchTimer = null;
+
+  function syncHomeNavVisibility() {
+    const homeVisible = !els.homeView.classList.contains('hidden');
+    if (!homeVisible) {
+      els.feedToggle.classList.add('hidden');
+      els.areaStripWrap?.classList.add('hidden');
+      return;
+    }
+    els.feedToggle.classList.toggle('hidden', searchActive);
+    if (searchActive || !areas.length) {
+      els.areaStripWrap?.classList.add('hidden');
+      return;
+    }
+    els.areaStripWrap?.classList.remove('hidden');
+    els.areaStrip.classList.remove('hidden');
+  }
 
   // ---- Utils ----
   const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -325,10 +343,7 @@
     areas = data || [];
     renderAreaStrip();
     populateAreaSelect();
-    if (areas.length) {
-      els.areaStripWrap?.classList.remove('hidden');
-      els.areaStrip.classList.remove('hidden');
-    }
+    syncHomeNavVisibility();
   }
 
   function renderAreaStrip() {
@@ -370,11 +385,7 @@
     els.searchBar.classList.add('hidden');
     if (searchActive) {
       searchActive = false;
-      els.feedToggle.classList.remove('hidden');
-      if (areas.length) {
-        els.areaStripWrap?.classList.remove('hidden');
-        els.areaStrip.classList.remove('hidden');
-      }
+      syncHomeNavVisibility();
       loadFeed();
     }
   }
@@ -385,11 +396,7 @@
     if (!q) {
       if (searchActive) {
         searchActive = false;
-        els.feedToggle.classList.remove('hidden');
-        if (areas.length) {
-          els.areaStripWrap?.classList.remove('hidden');
-          els.areaStrip.classList.remove('hidden');
-        }
+        syncHomeNavVisibility();
         loadFeed();
       }
       return;
@@ -399,8 +406,7 @@
 
   async function runSearch(q) {
     searchActive = true;
-    els.feedToggle.classList.add('hidden');
-    els.areaStripWrap?.classList.add('hidden');
+    syncHomeNavVisibility();
     els.areaStrip.classList.add('hidden');
     els.posts.innerHTML = '<p class="empty">Searching…</p>';
     const [postsRes, usersRes] = await Promise.all([
@@ -657,6 +663,7 @@
 
   async function openProfile(userId) {
     els.homeView.classList.add('hidden'); els.profileView.classList.remove('hidden');
+    syncHomeNavVisibility();
     els.profileBody.innerHTML = '<p class="empty">Loading profile…</p>';
     const { data: prof, error } = await supabase.from('Users').select('"creator-id", Name, avatar_url, bio, user_id').eq('user_id', userId).single();
     if (error || !prof) { els.profileBody.innerHTML = '<p class="empty">Profile not found.</p>'; return; }
@@ -698,7 +705,11 @@
     const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
     renderInto($('profilePosts'), (posts || []).map((r) => fromRest(r, likedSet, dislikedSet)));
   }
-  function closeProfile() { els.profileView.classList.add('hidden'); els.homeView.classList.remove('hidden'); }
+  function closeProfile() {
+    els.profileView.classList.add('hidden');
+    els.homeView.classList.remove('hidden');
+    syncHomeNavVisibility();
+  }
   async function saveBio(userId, btn) {
     const input = $('bioInput'); if (!input) return;
     btn.disabled = true; btn.textContent = 'Saving…';
