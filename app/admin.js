@@ -13,6 +13,9 @@ const $ = (id) => document.getElementById(id);
 
 let myRole = null;
 let myName = '';
+let currentTab = new URLSearchParams(window.location.search).get('tab') || 'reports';
+let updateRows = [];
+let editingUpdateId = null;
 
 const esc = (s) => String(s ?? '')
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -57,19 +60,30 @@ function openConsole() {
   $('console').classList.remove('hidden');
   $('meName').textContent = myName;
   $('meRole').textContent = myRole;
+  if (myRole === 'tech') $('tabUpdates').classList.remove('hidden');
   if (myRole === 'tech') $('tabAdmins').classList.remove('hidden');
-  showTab('reports');
-  loadReports();
+  openTab(currentTab);
 }
 
 // ---- Tabs ----
 function showTab(name) {
-  const map = { reports: 'tabReports', areas: 'tabAreas', admins: 'tabAdmins', audit: 'tabAudit' };
-  const views = { reports: 'viewReports', areas: 'viewAreas', admins: 'viewAdmins', audit: 'viewAudit' };
+  const map = { reports: 'tabReports', areas: 'tabAreas', updates: 'tabUpdates', admins: 'tabAdmins', audit: 'tabAudit' };
+  const views = { reports: 'viewReports', areas: 'viewAreas', updates: 'viewUpdates', admins: 'viewAdmins', audit: 'viewAudit' };
   Object.values(map).forEach((id) => $(id).classList.remove('active'));
   Object.values(views).forEach((id) => $(id).classList.add('hidden'));
   $(map[name]).classList.add('active');
   $(views[name]).classList.remove('hidden');
+}
+
+function openTab(name) {
+  const nextTab = name === 'updates' && myRole !== 'tech' ? 'reports' : name;
+  currentTab = nextTab;
+  showTab(nextTab);
+  if (nextTab === 'reports') loadReports();
+  if (nextTab === 'areas') loadAreasAdmin();
+  if (nextTab === 'updates') loadUpdatesAdmin();
+  if (nextTab === 'admins') loadAdmins();
+  if (nextTab === 'audit') loadAudit();
 }
 
 // ---- Reports queue ----
@@ -249,6 +263,168 @@ async function loadAreasAdmin() {
     </div>`;
 }
 
+function updateBucketLabel(bucket) {
+  if (bucket === 'known_issue') return 'Known issue';
+  return 'Changelog';
+}
+
+function updateStatusLabel(status) {
+  return String(status || 'draft').replaceAll('_', ' ');
+}
+
+function renderUpdateForm(update = null) {
+  const bucket = update?.bucket || 'changelog';
+  const title = update?.title || '';
+  const body = update?.body || '';
+  const status = update?.status || 'planned';
+  const sortOrder = update?.sort_order ?? 0;
+  const published = update?.published !== false;
+  editingUpdateId = update?.id ?? null;
+
+  return `
+    <div class="glass">
+      <h3 style="margin-bottom:8px;">${editingUpdateId ? 'Edit update entry' : 'Create update entry'}</h3>
+      <p class="muted" style="font-size:13px;">These rows back the public updates page.</p>
+      <div class="find-row">
+        <select id="updateBucket" style="min-width:150px;">
+          <option value="changelog" ${bucket === 'changelog' ? 'selected' : ''}>Changelog</option>
+          <option value="known_issue" ${bucket === 'known_issue' ? 'selected' : ''}>Known issue</option>
+        </select>
+        <select id="updateStatus" style="min-width:160px;">
+          <option value="planned" ${status === 'planned' ? 'selected' : ''}>planned</option>
+          <option value="in_progress" ${status === 'in_progress' ? 'selected' : ''}>in_progress</option>
+          <option value="fixed" ${status === 'fixed' ? 'selected' : ''}>fixed</option>
+          <option value="broken" ${status === 'broken' ? 'selected' : ''}>broken</option>
+          <option value="needs_attention" ${status === 'needs_attention' ? 'selected' : ''}>needs_attention</option>
+          <option value="note" ${status === 'note' ? 'selected' : ''}>note</option>
+        </select>
+        <input id="updateSort" type="number" value="${esc(sortOrder)}" placeholder="Sort" style="width:110px;" />
+        <label class="muted" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
+          <input id="updatePublished" type="checkbox" ${published ? 'checked' : ''} /> Published
+        </label>
+      </div>
+      <div style="margin-top:10px;">
+        <input id="updateTitle" type="text" value="${esc(title)}" placeholder="Title" style="width:100%;margin-bottom:10px;" />
+        <textarea id="updateBody" placeholder="What changed or what is broken?">${esc(body)}</textarea>
+      </div>
+      <div class="acts">
+        <button id="saveUpdateBtn" style="animation:none;">${editingUpdateId ? 'Save changes' : 'Add update'}</button>
+        <button id="clearUpdateBtn" class="btn-neutral" style="animation:none;">Clear</button>
+      </div>
+      <div class="status" id="updateEditorStatus"></div>
+    </div>`;
+}
+
+function renderUpdateList() {
+  const v = $('viewUpdates');
+  if (!updateRows.length) {
+    v.querySelector('#updateList').innerHTML = '<p class="muted">No update rows yet.</p>';
+    return;
+  }
+
+  v.querySelector('#updateList').innerHTML = updateRows.map((row) => `
+    <div class="updates-item" data-update-id="${row.id}">
+      <div class="updates-item-head">
+        <div>
+          <span class="pill ${row.bucket}">${esc(updateBucketLabel(row.bucket))}</span>
+          <span class="pill ${esc(row.status || 'note')}">${esc(updateStatusLabel(row.status))}</span>
+        </div>
+        <div class="muted" style="font-size:12px;">${row.published ? 'published' : 'draft'} · sort ${esc(row.sort_order ?? 0)}</div>
+      </div>
+      <div class="updates-item-title">${esc(row.title || 'Untitled')}</div>
+      <div class="updates-item-body">${esc(row.body || '')}</div>
+      <div class="updates-item-meta">${esc(fmt(row.updated_at || row.created_at))}</div>
+      <div class="acts">
+        <button class="btn-neutral" data-act="edit-update" data-id="${row.id}" style="animation:none;padding:6px 12px;font-size:13px;">Edit</button>
+        <button class="btn-danger" data-act="delete-update" data-id="${row.id}" style="animation:none;padding:6px 12px;font-size:13px;">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadUpdatesAdmin() {
+  const v = $('viewUpdates');
+  v.innerHTML = `
+    <div class="glass">
+      <div class="row">
+        <div>
+          <h3 style="margin-bottom:6px;">Updates editor</h3>
+          <p class="muted" style="font-size:13px;">Manage the public changelog and known issues from Supabase.</p>
+        </div>
+        <a href="../updates.html"><button class="btn-secondary" style="animation:none;padding:6px 14px;font-size:13px;">Open public page</button></a>
+      </div>
+    </div>
+    ${renderUpdateForm()}
+    <div class="glass">
+      <h3 style="margin-bottom:8px;">Current update rows</h3>
+      <div id="updateList"><p class="muted">Loading…</p></div>
+    </div>`;
+
+  try {
+    const { data, error } = await supabase.from('SiteUpdates')
+      .select('id, bucket, title, body, status, sort_order, published, created_at, updated_at')
+      .order('sort_order', { ascending: false })
+      .order('updated_at', { ascending: false });
+    if (error) throw error;
+    updateRows = data || [];
+  } catch (err) {
+    updateRows = [];
+    v.querySelector('#updateList').innerHTML = `<p class="muted">Could not load updates: ${esc(err.message)}</p>`;
+  }
+
+  renderUpdateList();
+
+  $('saveUpdateBtn').addEventListener('click', saveUpdate);
+  $('clearUpdateBtn').addEventListener('click', () => { loadUpdatesAdmin(); });
+}
+
+async function saveUpdate() {
+  const bucket = $('updateBucket').value;
+  const status = $('updateStatus').value;
+  const title = $('updateTitle').value.trim();
+  const body = $('updateBody').value.trim();
+  const sortOrder = Number($('updateSort').value || 0);
+  const published = $('updatePublished').checked;
+  const statusBox = $('updateEditorStatus');
+  if (!title || !body) {
+    statusBox.textContent = 'Title and body are required.';
+    return;
+  }
+  statusBox.textContent = editingUpdateId ? 'Saving…' : 'Creating…';
+  try {
+    const payload = { bucket, status, title, body, sort_order: sortOrder, published };
+    const query = editingUpdateId
+      ? supabase.from('SiteUpdates').update(payload).eq('id', editingUpdateId)
+      : supabase.from('SiteUpdates').insert(payload);
+    const { error } = await query;
+    if (error) throw error;
+    statusBox.textContent = 'Saved.';
+    loadUpdatesAdmin();
+  } catch (err) {
+    statusBox.textContent = 'Failed: ' + err.message;
+  }
+}
+
+async function deleteUpdate(id) {
+  if (!confirm('Delete this update row?')) return;
+  try {
+    const { error } = await supabase.from('SiteUpdates').delete().eq('id', id);
+    if (error) throw error;
+    loadUpdatesAdmin();
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
+}
+
+function editUpdate(id) {
+  const row = updateRows.find((item) => String(item.id) === String(id));
+  if (!row) return;
+  const v = $('viewUpdates');
+  v.querySelector('.glass:nth-of-type(2)').outerHTML = renderUpdateForm(row);
+  $('saveUpdateBtn').addEventListener('click', saveUpdate);
+  $('clearUpdateBtn').addEventListener('click', () => { loadUpdatesAdmin(); });
+}
+
 async function createArea() {
   const name = $('newAreaName').value.trim();
   const emoji = $('newAreaEmoji').value.trim();
@@ -293,10 +469,11 @@ async function rejectAreaSuggestion(id) {
 // ---- Wiring ----
 $('signInBtn').addEventListener('click', signIn);
 $('signOutBtn').addEventListener('click', signOut);
-$('tabReports').addEventListener('click', () => { showTab('reports'); loadReports(); });
-$('tabAreas').addEventListener('click', () => { showTab('areas'); loadAreasAdmin(); });
-$('tabAdmins').addEventListener('click', () => { showTab('admins'); loadAdmins(); });
-$('tabAudit').addEventListener('click', () => { showTab('audit'); loadAudit(); });
+$('tabReports').addEventListener('click', () => openTab('reports'));
+$('tabAreas').addEventListener('click', () => openTab('areas'));
+$('tabUpdates').addEventListener('click', () => openTab('updates'));
+$('tabAdmins').addEventListener('click', () => openTab('admins'));
+$('tabAudit').addEventListener('click', () => openTab('audit'));
 
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -310,6 +487,8 @@ document.addEventListener('click', (e) => {
   if (act === 'delete-area') return deleteArea(el.dataset.areaId);
   if (act === 'approve-suggestion') return approveAreaSuggestion(el.dataset.id, el.dataset.name);
   if (act === 'reject-suggestion') return rejectAreaSuggestion(el.dataset.id);
+  if (act === 'edit-update') return editUpdate(el.dataset.id);
+  if (act === 'delete-update') return deleteUpdate(el.dataset.id);
 });
 document.addEventListener('click', (e) => {
   if (e.target.id === 'findBtn') findUsers();
