@@ -31,6 +31,15 @@
       input:focus, select:focus { outline: none; border-color: #8b5cf6; }
       .find-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
       .updates-editor { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr); gap: 14px; }
+      .updates-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0 14px; }
+      .updates-toolbar input, .updates-toolbar select { min-width: 140px; }
+      .updates-stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 2px; }
+      .updates-stat {
+        padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: rgba(255,255,255,0.75);
+      }
+      .updates-quick-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .updates-quick-add button { animation: none; padding: 6px 12px; font-size: 13px; background: rgba(255,255,255,0.08); }
       .updates-editor textarea {
         width: 100%; min-height: 150px; resize: vertical; background: rgba(10,10,10,0.6);
         border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 12px; padding: 10px 12px;
@@ -45,6 +54,7 @@
       .updates-item-title { font-weight: 700; }
       .updates-item-body { margin-top: 8px; color: rgba(255,255,255,0.78); white-space: pre-wrap; word-break: break-word; }
       .updates-item-meta { margin-top: 8px; color: rgba(255,255,255,0.45); font-size: 12px; }
+      .updates-item-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
       .audit-item { font-size: 13px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
       .audit-item .a-act { color: #c4b5fd; font-weight: 600; }
       .audit-item .a-meta { color: rgba(255,255,255,0.45); font-size: 11px; }
