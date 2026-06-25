@@ -16,6 +16,7 @@ let myName = '';
 let currentTab = new URLSearchParams(window.location.search).get('tab') || 'reports';
 let updateRows = [];
 let editingUpdateId = null;
+let updateFilter = { bucket: 'all', published: 'all', query: '' };
 
 const esc = (s) => String(s ?? '')
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -353,6 +354,21 @@ async function loadUpdatesAdmin() {
         </div>
         <a href="../updates.html"><button class="btn-secondary" style="animation:none;padding:6px 14px;font-size:13px;">Open public page</button></a>
       </div>
+      <div class="updates-stats" id="updatesStats"></div>
+      <div class="updates-toolbar">
+        <input id="updatesSearch" type="text" placeholder="Search title/body…" value="${esc(updateFilter.query)}" />
+        <select id="updatesBucketFilter">
+          <option value="all" ${updateFilter.bucket === 'all' ? 'selected' : ''}>All buckets</option>
+          <option value="changelog" ${updateFilter.bucket === 'changelog' ? 'selected' : ''}>Changelog</option>
+          <option value="known_issue" ${updateFilter.bucket === 'known_issue' ? 'selected' : ''}>Known issues</option>
+        </select>
+        <select id="updatesPublishedFilter">
+          <option value="all" ${updateFilter.published === 'all' ? 'selected' : ''}>All states</option>
+          <option value="published" ${updateFilter.published === 'published' ? 'selected' : ''}>Published</option>
+          <option value="draft" ${updateFilter.published === 'draft' ? 'selected' : ''}>Drafts</option>
+        </select>
+        <button id="refreshUpdatesBtn" class="btn-secondary" style="animation:none;padding:6px 14px;font-size:13px;">Refresh</button>
+      </div>
     </div>
     ${renderUpdateForm()}
     <div class="glass">
@@ -374,8 +390,39 @@ async function loadUpdatesAdmin() {
 
   renderUpdateList();
 
+  const statsBox = v.querySelector('#updatesStats');
+  const counts = updateRows.reduce((acc, row) => {
+    acc.total += 1;
+    acc[row.bucket] = (acc[row.bucket] || 0) + 1;
+    if (row.published) acc.published += 1; else acc.draft += 1;
+    return acc;
+  }, { total: 0, changelog: 0, known_issue: 0, published: 0, draft: 0 });
+  statsBox.innerHTML = `
+    <span class="updates-stat">Total ${counts.total}</span>
+    <span class="updates-stat">Changelog ${counts.changelog}</span>
+    <span class="updates-stat">Known issues ${counts.known_issue}</span>
+    <span class="updates-stat">Published ${counts.published}</span>
+    <span class="updates-stat">Drafts ${counts.draft}</span>`;
+
+  const editor = v.querySelector('.glass:nth-of-type(2)');
+  if (editor) {
+    const quickRow = document.createElement('div');
+    quickRow.className = 'updates-quick-add';
+    quickRow.innerHTML = `
+      <button data-template="changelog">New changelog</button>
+      <button data-template="issue">New known issue</button>
+      <button data-template="planned">Quick planned</button>
+      <button data-template="broken">Quick broken</button>`;
+    editor.querySelector('.acts').before(quickRow);
+    quickRow.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => startUpdateTemplate(btn.dataset.template)));
+  }
+
   $('saveUpdateBtn').addEventListener('click', saveUpdate);
   $('clearUpdateBtn').addEventListener('click', () => { loadUpdatesAdmin(); });
+  $('refreshUpdatesBtn').addEventListener('click', () => loadUpdatesAdmin());
+  $('updatesSearch').addEventListener('input', (e) => { updateFilter.query = e.target.value.trim(); applyUpdateFilters(); });
+  $('updatesBucketFilter').addEventListener('change', (e) => { updateFilter.bucket = e.target.value; applyUpdateFilters(); });
+  $('updatesPublishedFilter').addEventListener('change', (e) => { updateFilter.published = e.target.value; applyUpdateFilters(); });
 }
 
 async function saveUpdate() {
@@ -405,6 +452,24 @@ async function saveUpdate() {
   }
 }
 
+function startUpdateTemplate(template) {
+  const defaults = {
+    changelog: { bucket: 'changelog', status: 'planned', title: 'New changelog item', body: 'Describe the change here.' },
+    issue: { bucket: 'known_issue', status: 'needs_attention', title: 'New known issue', body: 'Describe the problem here.' },
+    planned: { bucket: 'changelog', status: 'planned', title: 'Planned change', body: 'Describe what is coming next.' },
+    broken: { bucket: 'known_issue', status: 'broken', title: 'Broken feature', body: 'Describe what is failing and why it matters.' },
+  };
+  const preset = defaults[template] || defaults.changelog;
+  editingUpdateId = null;
+  $('updateBucket').value = preset.bucket;
+  $('updateStatus').value = preset.status;
+  $('updateTitle').value = preset.title;
+  $('updateBody').value = preset.body;
+  $('updateSort').value = String((updateRows[0]?.sort_order ?? 0) + 10);
+  $('updatePublished').checked = true;
+  $('updateEditorStatus').textContent = 'Template loaded.';
+}
+
 async function deleteUpdate(id) {
   if (!confirm('Delete this update row?')) return;
   try {
@@ -416,13 +481,99 @@ async function deleteUpdate(id) {
   }
 }
 
+async function duplicateUpdate(id) {
+  const row = updateRows.find((item) => String(item.id) === String(id));
+  if (!row) return;
+  const payload = {
+    bucket: row.bucket,
+    status: row.status,
+    title: `${row.title || 'Untitled'} (copy)`,
+    body: row.body,
+    sort_order: (row.sort_order ?? 0) + 1,
+    published: false,
+  };
+  try {
+    const { error } = await supabase.from('SiteUpdates').insert(payload);
+    if (error) throw error;
+    loadUpdatesAdmin();
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
+}
+
+async function toggleUpdatePublished(id, nextPublished) {
+  try {
+    const { error } = await supabase.from('SiteUpdates').update({ published: nextPublished }).eq('id', id);
+    if (error) throw error;
+    loadUpdatesAdmin();
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
+}
+
+async function nudgeUpdateSort(id, delta) {
+  const row = updateRows.find((item) => String(item.id) === String(id));
+  if (!row) return;
+  try {
+    const { error } = await supabase.from('SiteUpdates')
+      .update({ sort_order: (row.sort_order ?? 0) + delta })
+      .eq('id', id);
+    if (error) throw error;
+    loadUpdatesAdmin();
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
+}
+
+function applyUpdateFilters() {
+  const v = $('viewUpdates');
+  const list = v.querySelector('#updateList');
+  if (!list) return;
+  const query = updateFilter.query.toLowerCase();
+  const rows = updateRows.filter((row) => {
+    const matchesBucket = updateFilter.bucket === 'all' || row.bucket === updateFilter.bucket;
+    const matchesPublished = updateFilter.published === 'all'
+      || (updateFilter.published === 'published' && row.published)
+      || (updateFilter.published === 'draft' && !row.published);
+    const text = `${row.title || ''} ${row.body || ''} ${row.status || ''}`.toLowerCase();
+    const matchesQuery = !query || text.includes(query);
+    return matchesBucket && matchesPublished && matchesQuery;
+  });
+  list.innerHTML = rows.length ? rows.map((row) => `
+    <div class="updates-item" data-update-id="${row.id}">
+      <div class="updates-item-head">
+        <div>
+          <span class="pill ${row.bucket}">${esc(updateBucketLabel(row.bucket))}</span>
+          <span class="pill ${esc(row.status || 'note')}">${esc(updateStatusLabel(row.status))}</span>
+        </div>
+        <div class="muted" style="font-size:12px;">${row.published ? 'published' : 'draft'} · sort ${esc(row.sort_order ?? 0)}</div>
+      </div>
+      <div class="updates-item-title">${esc(row.title || 'Untitled')}</div>
+      <div class="updates-item-body">${esc(row.body || '')}</div>
+      <div class="updates-item-meta">${esc(fmt(row.updated_at || row.created_at))}</div>
+      <div class="updates-item-actions">
+        <button class="btn-neutral" data-act="edit-update" data-id="${row.id}" style="animation:none;padding:6px 12px;font-size:13px;">Edit</button>
+        <button class="btn-neutral" data-act="duplicate-update" data-id="${row.id}" style="animation:none;padding:6px 12px;font-size:13px;">Duplicate</button>
+        <button class="btn-neutral" data-act="toggle-update" data-id="${row.id}" data-published="${row.published ? '0' : '1'}" style="animation:none;padding:6px 12px;font-size:13px;">${row.published ? 'Unpublish' : 'Publish'}</button>
+        <button class="btn-neutral" data-act="sort-update" data-id="${row.id}" data-delta="10" style="animation:none;padding:6px 12px;font-size:13px;">▲</button>
+        <button class="btn-neutral" data-act="sort-update" data-id="${row.id}" data-delta="-10" style="animation:none;padding:6px 12px;font-size:13px;">▼</button>
+        <button class="btn-danger" data-act="delete-update" data-id="${row.id}" style="animation:none;padding:6px 12px;font-size:13px;">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="muted">No rows match the current filters.</p>';
+}
+
 function editUpdate(id) {
   const row = updateRows.find((item) => String(item.id) === String(id));
   if (!row) return;
-  const v = $('viewUpdates');
-  v.querySelector('.glass:nth-of-type(2)').outerHTML = renderUpdateForm(row);
+  const formHost = $('updateEditorStatus')?.closest('.glass');
+  if (!formHost) return;
+  formHost.outerHTML = renderUpdateForm(row);
   $('saveUpdateBtn').addEventListener('click', saveUpdate);
   $('clearUpdateBtn').addEventListener('click', () => { loadUpdatesAdmin(); });
+  $('updatesSearch').addEventListener('input', (e) => { updateFilter.query = e.target.value.trim(); applyUpdateFilters(); });
+  $('updatesBucketFilter').addEventListener('change', (e) => { updateFilter.bucket = e.target.value; applyUpdateFilters(); });
+  $('updatesPublishedFilter').addEventListener('change', (e) => { updateFilter.published = e.target.value; applyUpdateFilters(); });
 }
 
 async function createArea() {
@@ -488,6 +639,9 @@ document.addEventListener('click', (e) => {
   if (act === 'approve-suggestion') return approveAreaSuggestion(el.dataset.id, el.dataset.name);
   if (act === 'reject-suggestion') return rejectAreaSuggestion(el.dataset.id);
   if (act === 'edit-update') return editUpdate(el.dataset.id);
+  if (act === 'duplicate-update') return duplicateUpdate(el.dataset.id);
+  if (act === 'toggle-update') return toggleUpdatePublished(el.dataset.id, el.dataset.published === '1');
+  if (act === 'sort-update') return nudgeUpdateSort(el.dataset.id, Number(el.dataset.delta || 0));
   if (act === 'delete-update') return deleteUpdate(el.dataset.id);
 });
 document.addEventListener('click', (e) => {
