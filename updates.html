@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ConnectEd · Updates</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        background:
+          radial-gradient(circle at top left, rgba(99, 102, 241, 0.22), transparent 34%),
+          radial-gradient(circle at top right, rgba(236, 72, 153, 0.16), transparent 30%),
+          linear-gradient(180deg, #09090f 0%, #0b1020 48%, #07070c 100%);
+      }
+
+      .updates-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 20px 72px;
+      }
+
+      .hero {
+        border: 1px solid rgba(139, 92, 246, 0.28);
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(17, 24, 39, 0.88), rgba(9, 9, 15, 0.88));
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        padding: 34px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before,
+      .hero::after {
+        content: '';
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(6px);
+        pointer-events: none;
+      }
+
+      .hero::before {
+        width: 240px;
+        height: 240px;
+        background: rgba(139, 92, 246, 0.18);
+        right: -60px;
+        top: -60px;
+      }
+
+      .hero::after {
+        width: 170px;
+        height: 170px;
+        background: rgba(236, 72, 153, 0.12);
+        left: 14%;
+        bottom: -80px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        background: rgba(255, 255, 255, 0.05);
+        color: #d8b4fe;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 5vw, 4.3rem);
+        line-height: 0.96;
+        margin: 18px 0 14px;
+        max-width: 10ch;
+      }
+
+      .hero p {
+        max-width: 760px;
+        font-size: 1.02rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .meta-row,
+      .action-row,
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .meta-row {
+        margin-top: 20px;
+      }
+
+      .pill,
+      .toc a,
+      .action-row a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
+        width: auto;
+      }
+
+      .action-row {
+        margin-top: 22px;
+      }
+
+      .action-row a.primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-color: transparent;
+      }
+
+      .action-row a.manage {
+        border-color: rgba(236, 72, 153, 0.32);
+        color: #f9a8d4;
+      }
+
+      .notice {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.78);
+        line-height: 1.6;
+      }
+
+      .hidden { display: none !important; }
+
+      .section {
+        margin-top: 24px;
+        padding-top: 18px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin: 0 0 14px;
+      }
+
+      .section-header h2 {
+        font-size: clamp(1.5rem, 2vw, 2rem);
+      }
+
+      .section-header p {
+        color: rgba(255, 255, 255, 0.62);
+        max-width: 54ch;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        grid-column: span 6;
+        border-radius: 22px;
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .card.full { grid-column: 1 / -1; }
+      .card.third { grid-column: span 4; }
+
+      .card .tagline {
+        display: inline-block;
+        margin-bottom: 10px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #c4b5fd;
+      }
+
+      .card h3 {
+        font-size: 1.22rem;
+        margin-bottom: 10px;
+      }
+
+      .card p {
+        color: rgba(255, 255, 255, 0.74);
+        line-height: 1.65;
+      }
+
+      .checklist,
+      .known-issues,
+      .timeline {
+        list-style: none;
+        margin-top: 14px;
+      }
+
+      .checklist li,
+      .known-issues li,
+      .timeline li {
+        position: relative;
+        padding-left: 18px;
+        color: rgba(255, 255, 255, 0.82);
+        line-height: 1.6;
+      }
+
+      .checklist li + li,
+      .known-issues li + li,
+      .timeline li + li {
+        margin-top: 10px;
+      }
+
+      .checklist li::before,
+      .known-issues li::before,
+      .timeline li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.74em;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #ec4899);
+      }
+
+      .issue-badge,
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-right: 8px;
+        margin-bottom: 10px;
+      }
+
+      .issue-badge {
+        background: rgba(239, 68, 68, 0.16);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.28);
+      }
+
+      .status-badge {
+        background: rgba(99, 102, 241, 0.16);
+        color: #c7d2fe;
+        border: 1px solid rgba(99, 102, 241, 0.28);
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 18px;
+        padding: 18px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .timeline-item:first-child { border-top: none; padding-top: 0; }
+      .timeline-date { color: #c4b5fd; font-weight: 700; }
+      .timeline-item h3 { margin-bottom: 8px; }
+
+      .footer-note {
+        margin-top: 22px;
+        padding: 18px 20px;
+        border-radius: 18px;
+        border: 1px dashed rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      @media (max-width: 860px) {
+        .card,
+        .card.third {
+          grid-column: 1 / -1;
+        }
+
+        .timeline-item {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .hero {
+          padding: 26px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="updates-shell">
+      <section class="hero">
+        <span class="eyebrow">Updates / changelog / rough edges</span>
+        <h1>What is changing right now</h1>
+        <p>
+          This page is the running log for the Visual-Overhaul branch. It tracks the big redesign work,
+          the smaller usability fixes that are folded into it, and the things we already know are still
+          broken or unfinished.
+        </p>
+        <div class="meta-row">
+          <span class="pill">Branch: Visual-Overhaul</span>
+          <span class="pill">Status: active redesign</span>
+          <span class="pill">Scope: product, layout, copy, polish</span>
+        </div>
+        <div class="action-row">
+          <a class="primary" href="app/index.html">Open the app</a>
+          <a href="index.html">Back to home</a>
+          <a class="manage hidden" id="manageUpdatesLink" href="app/admin.html?tab=updates">Edit updates</a>
+          <a href="#known-issues">Jump to known issues</a>
+        </div>
+        <div class="notice hidden" id="updatesNotice"></div>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="section-header">
+          <div>
+            <h2>What we are changing</h2>
+            <p>
+              The overhaul is moving toward a calmer, more usable layout that feels closer to a real
+              product and less like a prototype with every idea turned up at once.
+            </p>
+          </div>
+          <div class="toc">
+            <a href="#summary">Summary</a>
+            <a href="#timeline">Changelog</a>
+            <a href="#known-issues">Known issues</a>
+          </div>
+        </div>
+
+        <div class="grid">
+          <article class="card third">
+            <span class="tagline">Layout</span>
+            <h3>Natural structure</h3>
+            <p>Reworking the page rhythm, spacing, and hierarchy so the app is easier to scan and feels less noisy.</p>
+            <ul class="checklist">
+              <li>Cleaner page sections and clearer page titles.</li>
+              <li>Less visual shouting from repeated chrome.</li>
+              <li>More consistent spacing across pages.</li>
+            </ul>
+          </article>
+
+          <article class="card third">
+            <span class="tagline">Usability</span>
+            <h3>More obvious actions</h3>
+            <p>Keeping the important controls visible and reducing the amount of guessing required to use the app.</p>
+            <ul class="checklist">
+              <li>Entry points for updates, reports, and feed navigation.</li>
+              <li>Better states for loading, empty, and error conditions.</li>
+              <li>Copy that tells people what a screen is for.</li>
+            </ul>
+          </article>
+
+          <article class="card third">
+            <span class="tagline">Visual system</span>
+            <h3>Tighter styling rules</h3>
+            <p>Replacing the scattered vibe-coded look with a more deliberate palette, spacing scale, and card system.</p>
+            <ul class="checklist">
+              <li>Fewer one-off styles and fewer random treatments.</li>
+              <li>Consistent pills, surfaces, and buttons.</li>
+              <li>Gentler gradients and more readable contrast.</li>
+            </ul>
+          </article>
+
+          <article class="card full">
+            <span class="tagline">Product direction</span>
+            <h3>Current priorities</h3>
+            <p>
+              The current pass is focusing on the core experience first: the feed, profiles, posting,
+              moderation, and the surrounding pages that frame those actions. The goal is to make the app
+              feel coherent before any extra features get layered on top.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="timeline">
+        <div class="section-header">
+          <div>
+            <h2>Changelog</h2>
+            <p>Live notes on the overhaul work. Add new entries at the top as changes land.</p>
+          </div>
+        </div>
+
+        <div class="card full">
+          <div class="timeline-item">
+            <div class="timeline-date">Now</div>
+            <div>
+              <h3>Creating a proper updates page</h3>
+              <p>Giving the project a single place to record what is changing, what still feels rough, and what should be addressed next.</p>
+              <ul class="timeline">
+                <li>Dedicated changelog page added to the public site.</li>
+                <li>Links added from the landing page and app shell.</li>
+                <li>Written as a live note rather than a one-off announcement.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-date">Visual pass</div>
+            <div>
+              <h3>Cleaning up the interface language</h3>
+              <p>The current redesign is trying to make the app look intentional instead of experimental.</p>
+              <ul class="timeline">
+                <li>Simplify the feed surface and make the reading order easier to follow.</li>
+                <li>Reduce the amount of competing neon treatment on controls and panels.</li>
+                <li>Keep the school-focused personality, but stop overusing it everywhere.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-date">Product pass</div>
+            <div>
+              <h3>Making the app easier to understand</h3>
+              <p>Clarifying the main interactions so the site behaves like a product instead of a collection of demos.</p>
+              <ul class="timeline">
+                <li>Feed, profile, moderation, and reporting flows should all have obvious entry points.</li>
+                <li>Page labels and button text should explain where each action goes.</li>
+                <li>Empty and loading states need to say what is happening instead of just sitting there.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-date">Next</div>
+            <div>
+              <h3>Folding the rest of the overhaul into the same system</h3>
+              <p>Any new features should fit the layout rules, spacing rules, and content structure established by this pass.</p>
+              <ul class="timeline">
+                <li>Normalize card and panel styling across other pages.</li>
+                <li>Keep new pages readable on mobile from the start.</li>
+                <li>Turn vague UI experiments into reusable patterns.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="known-issues">
+        <div class="section-header">
+          <div>
+            <h2>Known issues and rough edges</h2>
+            <p>These are the things we already know about and expect to keep touching while the overhaul is in progress.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <article class="card">
+            <span class="issue-badge">Needs attention</span>
+            <h3>Some screens still feel like the old layout</h3>
+            <p>Parts of the project will continue to look inconsistent until the rest of the pages are brought up to the same visual standard.</p>
+          </article>
+
+          <article class="card">
+            <span class="issue-badge">Needs attention</span>
+            <h3>Features not working without signin</h3>
+            <p>We are aware, that there are issues involving certain features, such as latest sorting for posts and catagories that are requiring sign-ins to work. This is almost certainly due to RLS policies, but isn't our highest priority at this moment. We currently want to focus on finding our identity and style.</p>
+          </article>
+
+          <article class="card">
+            <span class="issue-badge">Needs attention</span>
+            <h3>Feature states may still be incomplete</h3>
+            <p>Some interactions are present, but the error handling, empty states, or edge-case handling around them may still be unfinished.</p>
+          </article>
+
+          <article class="card full">
+            <span class="status-badge">Tracking note</span>
+            <h3>Use this page as the living source of truth</h3>
+            <p>
+              When a feature is changed, moved, removed, or known to be broken, it should be recorded here so the project always has one place to check the current state.
+            </p>
+            <div class="footer-note">
+              If you want, the next step can be turning this into a real logged changelog with dated entries and status tags like <strong>fixed</strong>, <strong>broken</strong>, <strong>in progress</strong>, and <strong>planned</strong>.
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="updates.js"></script>
+  </body>
+</html>

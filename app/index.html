@@ -21,6 +21,22 @@
       .btn-secondary { animation: none; padding: 8px 18px; font-size: 14px; background: rgba(255, 255, 255, 0.08); }
       .btn-secondary:hover { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
 
+      .updates-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        background: rgba(255, 255, 255, 0.06);
+        color: #e9d5ff;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .updates-link:hover { background: rgba(255, 255, 255, 0.14); box-shadow: none; }
+
       .btn-google { animation: none; display: inline-flex; align-items: center; gap: 10px; background: #ffffff; color: #1f2937; }
       .btn-google:hover { background: #f1f1f1; box-shadow: 0 0 20px rgba(255, 255, 255, 0.25); }
       .btn-google svg { width: 18px; height: 18px; }
@@ -299,9 +315,6 @@
   </head>
   <body>
     <p style="background-color: #FFC800; text-align:center; width: 100%;">This is an ALPHA test. Expect features to not work or be missing.</p>
-    <div class="blob-container">
-      <div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div>
-    </div>
 
     <div class="content-wrapper">
       <div id="toast"></div>
@@ -316,6 +329,7 @@
           </div>
           <button class="btn-secondary hidden" id="myReportsBtn">My Reports</button>
           <button class="btn-secondary hidden" id="signOutBtn">Sign out</button>
+          <a class="updates-link" href="../updates.html">Updates</a>
           <button id="searchToggle" title="Search">🔍</button>
         </div>
 
