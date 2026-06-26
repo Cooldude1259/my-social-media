@@ -853,6 +853,24 @@
   // ---- Event delegation ----
   els.signInBtn.addEventListener('click', signIn);
   els.signOutBtn.addEventListener('click', signOut);
+
+  // Email/password sign-in
+  document.getElementById('emailAuthToggle')?.addEventListener('click', () => {
+    const form = document.getElementById('emailAuthForm');
+    form?.classList.toggle('open');
+  });
+  document.getElementById('emailAuthSubmit')?.addEventListener('click', async () => {
+    const email = document.getElementById('emailAuthEmail')?.value.trim();
+    const password = document.getElementById('emailAuthPassword')?.value;
+    const errEl = document.getElementById('emailAuthErr');
+    if (!email || !password) { if (errEl) { errEl.textContent = 'Enter your email and password.'; errEl.style.display = 'block'; } return; }
+    const btn = document.getElementById('emailAuthSubmit');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign in';
+    if (error) { if (errEl) { errEl.textContent = error.message; errEl.style.display = 'block'; } }
+    else { if (errEl) errEl.style.display = 'none'; }
+  });
   els.myReportsBtn?.addEventListener('click', openMyReports);
 
   document.addEventListener('click', (e) => {
