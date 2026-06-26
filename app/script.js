@@ -335,7 +335,7 @@
           <button class="pact" data-act="dislike" data-post-id="${p.id}" title="Not for me" style="color:${p.disliked ? '#727a8c' : '#9aa1b2'}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.7a2 2 0 0 0-2 1.7L2 11a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.3A2 2 0 0 1 21 4v7a2 2 0 0 1-2 2H17"/></svg>
           </button>
-          ${own ? `<button class="pact del-act" data-act="del-post" data-post-id="${p.id}">Delete</button>` : ''}
+          ${own ? `<button class="pact del-act" data-act="del-post" data-post-id="${p.id}">🗑️Delete</button>` : ''}
         </div>
         <div class="comments hidden" data-comments-for="${p.id}"></div>
       </div>`;
