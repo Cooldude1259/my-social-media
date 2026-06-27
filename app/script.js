@@ -332,7 +332,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5A8 8 0 1 1 21 12z"/></svg>
             <span class="comment-count">${p.commentCount}</span>
           </button>
-          <button class="pact" data-act="dislike" data-post-id="${p.id}" title="Not for me" style="color:${p.disliked ? '#727a8c' : '#9aa1b2'}">
+          <button class="pact dislike ${p.disliked ? 'disliked' : ''}" data-act="dislike" data-post-id="${p.id}" title="Not for me" style="color:${p.disliked ? '#727a8c' : '#9aa1b2'}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.7a2 2 0 0 0-2 1.7L2 11a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.3A2 2 0 0 1 21 4v7a2 2 0 0 1-2 2H17"/></svg>
           </button>
           ${own ? `<button class="pact del-act" data-act="del-post" data-post-id="${p.id}">🗑️Delete</button>` : ''}
@@ -457,30 +457,33 @@
       `<button class="suggest-chip">+ Suggest area</button>`;
   }
 
+  let selectedPickId = null;
+  function paintAreaPicks() {
+    document.querySelectorAll('[data-area-pick]').forEach((b) => {
+      const bid = parseInt(b.dataset.areaPick, 10);
+      const active = bid === selectedPickId;
+      const color = areaColor(areas.find((a) => a.id === bid)?.name);
+      b.classList.toggle('active', active);
+      b.style.background = active ? color : '';
+      b.style.color = active ? '#fff' : '';
+      b.style.borderColor = active ? 'transparent' : '';
+    });
+  }
+  function resetAreaPicks() { selectedPickId = null; paintAreaPicks(); }
+  els.areaPicks?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-area-pick]');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.areaPick, 10);
+    selectedPickId = selectedPickId === id ? null : id;
+    paintAreaPicks();
+  });
   function renderAreaPicks() {
     if (!els.areaPicks) return;
     els.areaPicks.innerHTML = areas.map((a) => {
       const color = areaColor(a.name);
       return `<button type="button" class="area-pick" data-area-pick="${a.id}" style=""><span class="chip-dot" style="background:${color}"></span>${esc(a.name)}</button>`;
     }).join('');
-    let selectedPickId = null;
-    els.areaPicks.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-area-pick]');
-      if (!btn) return;
-      const id = parseInt(btn.dataset.areaPick, 10);
-      selectedPickId = selectedPickId === id ? null : id;
-      document.querySelectorAll('[data-area-pick]').forEach((b) => {
-        const bid = parseInt(b.dataset.areaPick, 10);
-        const active = bid === selectedPickId;
-        const color = areaColor(areas.find((a) => a.id === bid)?.name);
-        b.classList.toggle('active', active);
-        b.style.background = active ? color : '';
-        b.style.color = active ? '#fff' : '';
-        b.style.borderColor = active ? 'transparent' : '';
-      });
-    });
-    // Expose selected id for form submit
-    els.areaPicks._getSelected = () => selectedPickId;
+    paintAreaPicks();
   }
 
   function renderAreasGrid() {
@@ -529,9 +532,7 @@
   document.addEventListener('click', (e) => {
     const card = e.target.closest('[data-area-nav]');
     if (card) {
-      selectedAreaId = parseInt(card.dataset.areaNave || card.dataset.areaNav, 10) || null;
-      // fix typo: always use areaNav
-      selectedAreaId = parseInt(card.getAttribute('data-area-nav'), 10) || null;
+      selectedAreaId = parseInt(card.dataset.areaNav, 10) || null;
       renderAreaStrip();
       showScreen('home');
     }
@@ -638,15 +639,13 @@
     }
     els.postBtn.disabled = true; els.status.textContent = 'Posting…';
     try {
-      const areaId = els.areaPicks?._getSelected?.() || null;
+      const areaId = selectedPickId || null;
       const { data, error } = await supabase.from('Posts')
         .insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'], area_id: areaId })
         .select('"post-id"').single();
       if (error) throw error;
       els.content.value = ''; els.title.value = '';
-      // Reset area picks
-      document.querySelectorAll('[data-area-pick]').forEach((b) => { b.classList.remove('active'); b.style.background = ''; b.style.color = ''; b.style.borderColor = ''; });
-      if (els.areaPicks) els.areaPicks._getSelected = () => null;
+      resetAreaPicks();
       els.status.textContent = 'Posted! Tagging…';
       try { await supabase.functions.invoke('tag-post', { body: { post_id: data['post-id'] } }); } catch (tagErr) { console.warn('tagging failed', tagErr); }
       els.status.textContent = 'Posted!';
@@ -674,8 +673,10 @@
         if (error) throw error;
         likeBtn.classList.add('liked'); setCount(countEl, +1);
         svg.setAttribute('fill', '#ff4d6d'); svg.setAttribute('stroke', '#ff4d6d');
-        if (disBtn) disBtn.style.color = '#9aa1b2';
-        if (disBtn) await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+        if (disBtn && disBtn.classList.contains('disliked')) {
+          disBtn.classList.remove('disliked'); disBtn.style.color = '#9aa1b2';
+          await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+        }
       }
     } catch (err) { console.error('like failed', err); }
   }
@@ -687,14 +688,14 @@
     const countEl = likeBtn.querySelector('.like-count');
     const svg = likeBtn.querySelector('svg');
     try {
-      if (disBtn.style.color === '#727a8c') {
+      if (disBtn.classList.contains('disliked')) {
         const { error } = await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
         if (error) throw error;
-        disBtn.style.color = '#9aa1b2';
+        disBtn.classList.remove('disliked'); disBtn.style.color = '#9aa1b2';
       } else {
         const { error } = await supabase.from('Dislikes').insert({ post_id: postId, user_id: authUserId });
         if (error) throw error;
-        disBtn.style.color = '#727a8c';
+        disBtn.classList.add('disliked'); disBtn.style.color = '#727a8c';
         if (likeBtn.classList.contains('liked')) {
           await supabase.from('Likes').delete().eq('post_id', postId).eq('user_id', authUserId);
           likeBtn.classList.remove('liked'); setCount(countEl, -1);
@@ -749,7 +750,7 @@
     } catch (err) { console.error(err); }
   }
   function bumpCommentCount(postId, delta) {
-    document.querySelectorAll(`[data-post-id="${postId}"]`).forEach((card) => {
+    document.querySelectorAll(`.card[data-post-id="${postId}"]`).forEach((card) => {
       const span = card.querySelector('.comment-count'); if (span) setCount(span, delta);
     });
   }
