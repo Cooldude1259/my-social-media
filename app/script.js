@@ -33,6 +33,34 @@
     'sports': '🏀', 'clubs': '🎭', 'events': '🎉',
     'help & homework': '📚', 'help': '📚', 'random': '💬',
   };
+  // ---- Theming: a saved style is one Supabase row of token -> value ----
+  // Each entry maps a column to a CSS custom property on :root. A style row can
+  // carry one column per key (hyphen or underscore names both work); applyTheme
+  // writes whatever the row provides and leaves the rest at stylesheet defaults.
+  const THEME_VARS = [
+    'primary', 'primary-hover', 'primary-deep', 'primary-soft', 'brand-grad',
+    'text', 'text-body', 'text-soft', 'text-muted', 'text-faint', 'placeholder',
+    'bg', 'surface', 'surface-2', 'surface-3', 'surface-4',
+    'border', 'border-2', 'border-strong', 'hairline',
+    'like', 'danger',
+    'font-head', 'font-body',
+    'radius-card', 'radius-btn', 'radius-pill', 'shadow-card',
+  ];
+  function applyTheme(row) {
+    const root = document.documentElement.style;
+    if (!row) return;
+    for (const key of THEME_VARS) {
+      const v = row[key] ?? row[key.replace(/-/g, '_')];
+      if (v != null && v !== '') root.setProperty(`--${key}`, String(v));
+    }
+  }
+  function clearTheme() {
+    const root = document.documentElement.style;
+    for (const key of THEME_VARS) root.removeProperty(`--${key}`);
+  }
+  window.applyTheme = applyTheme;
+  window.clearTheme = clearTheme;
+
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
   function areaEmoji(a) { return a.emoji || AREA_EMOJIS[(a.name || '').toLowerCase()] || '📌'; }
