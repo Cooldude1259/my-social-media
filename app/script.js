@@ -33,56 +33,20 @@
     'sports': '🏀', 'clubs': '🎭', 'events': '🎉',
     'help & homework': '📚', 'help': '📚', 'random': '💬',
   };
-  // ---- Theming: a saved style is one Supabase row of token -> value ----
-  // Each entry maps a column to a CSS custom property on :root. A style row can
-  // carry one column per key (hyphen or underscore names both work); applyTheme
-  // writes whatever the row provides and leaves the rest at stylesheet defaults.
-  const THEME_VARS = [
-    'primary', 'primary-hover', 'primary-deep', 'primary-soft', 'brand-grad',
-    'text', 'text-body', 'text-soft', 'text-muted', 'text-faint', 'placeholder',
-    'bg', 'surface', 'surface-2', 'surface-3', 'surface-4',
-    'border', 'border-2', 'border-strong', 'hairline',
-    'like', 'danger',
-    'font-head', 'font-body',
-    'radius-card', 'radius-btn', 'radius-pill', 'shadow-card',
-  ];
-  function applyTheme(row) {
-    const root = document.documentElement.style;
-    if (!row) return;
-    for (const key of THEME_VARS) {
-      const v = row[key] ?? row[key.replace(/-/g, '_')];
-      if (v != null && v !== '') root.setProperty(`--${key}`, String(v));
-    }
-  }
-  function clearTheme() {
-    const root = document.documentElement.style;
-    for (const key of THEME_VARS) root.removeProperty(`--${key}`);
-  }
-  window.applyTheme = applyTheme;
-  window.clearTheme = clearTheme;
-
-  // A style lives in the `styles` table (one column per token). By default the
-  // client applies the row flagged is_default; a locally-chosen style overrides it.
+  // ---- Theming ----
+  // applyTheme/setActiveStyle/clearTheme/resetActiveStyle are defined inline in
+  // index.html (no deps, always console-callable). Here we only fetch the saved
+  // style: a locally-chosen one, else the is_default row from the styles table.
   const STYLE_KEY = 'ce_active_style';
   async function loadActiveStyle() {
     try {
       const cached = localStorage.getItem(STYLE_KEY);
-      if (cached) { applyTheme(JSON.parse(cached)); return; }
+      if (cached) { window.applyTheme(JSON.parse(cached)); return; }
     } catch {}
     const { data, error } = await supabase.from('styles').select('*').eq('is_default', true).limit(1).single();
-    if (!error && data) applyTheme(data);
+    if (!error && data) window.applyTheme(data);
   }
-  function setActiveStyle(row) {
-    applyTheme(row);
-    try { localStorage.setItem(STYLE_KEY, JSON.stringify(row)); } catch {}
-  }
-  function resetActiveStyle() {
-    try { localStorage.removeItem(STYLE_KEY); } catch {}
-    clearTheme();
-    loadActiveStyle();
-  }
-  window.setActiveStyle = setActiveStyle;
-  window.resetActiveStyle = resetActiveStyle;
+  window.loadActiveStyle = loadActiveStyle;
 
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
