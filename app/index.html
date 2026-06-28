@@ -6,255 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Hanken Grotesque',system-ui,sans-serif;color:#1b1d28;background:#eef1f8;min-height:100vh;-webkit-font-smoothing:antialiased}
-
-    /* Shell */
-    .shell{display:grid;grid-template-columns:248px minmax(0,1fr) 296px;gap:26px;padding:26px;align-items:start;max-width:1400px;margin:0 auto}
-
-    /* Sidebar */
-    .sidebar{position:sticky;top:26px;display:flex;flex-direction:column;gap:6px}
-    .brand{display:flex;align-items:center;gap:11px;padding:6px 10px 18px}
-    .logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#19c3a6,#0e9f88);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;flex:0 0 auto}
-    .brand-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:21px;letter-spacing:-.02em;color:#1b1d28}
-    .nav-item{display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:9px;color:#535a6b;font-weight:600;font-size:15.5px;cursor:pointer;border:none;background:none;text-align:left;width:100%;transition:background .12s,color .12s;font-family:'Hanken Grotesque',sans-serif}
-    .nav-item:hover{background:#e4e9f5}
-    .nav-item.active{background:#dff3ee;color:#0c9079;font-weight:700}
-    .nav-item svg{width:21px;height:21px;flex:0 0 auto}
-    .new-post-btn{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;background:#0ea98f;color:#fff;border:none;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:15px;padding:13px;border-radius:11px;cursor:pointer;transition:background .12s;width:100%}
-    .new-post-btn:hover{background:#0b8f78}
-    .new-post-btn svg{width:19px;height:19px;flex:0 0 auto}
-    .me-row{display:flex;align-items:center;gap:11px;padding:12px 10px;border-radius:13px;cursor:pointer;margin-top:16px;transition:background .12s}
-    .me-row:hover{background:#e4e9f5}
-    .me-name{font-weight:700;font-size:14px;color:#1b1d28}
-    .me-sub{font-size:12.5px;color:#9aa1b2}
-    .signout-btn{margin-top:4px;background:none;border:none;color:#9aa1b2;font-family:'Hanken Grotesque',sans-serif;font-size:13px;padding:6px 14px;cursor:pointer;text-align:left;border-radius:9px;width:100%;transition:background .12s}
-    .signout-btn:hover{background:#f1f4fb;color:#535a6b}
-
-    /* Center column */
-    .center-col{min-width:0;display:flex;flex-direction:column;gap:16px;padding-bottom:40px}
-    #posts,#searchResults,#profilePosts{display:flex;flex-direction:column;gap:16px}
-
-    /* Right rail */
-    .right-rail{position:sticky;top:26px;display:flex;flex-direction:column;gap:16px}
-    .rail-card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -16px rgba(27,29,40,.22)}
-    .rail-title{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:#1b1d28;margin:0 0 14px}
-    .ann-card{background:linear-gradient(135deg,#fff4ec,#ffe9ef);border:1px solid #ffd9c2;border-radius:18px;padding:17px}
-    .ann-label{font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#ff6b3d;margin:0 0 7px}
-    .ann-title-text{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;margin:0 0 5px;color:#1b1d28}
-    .ann-body-text{font-size:13.5px;line-height:1.5;color:#6a5043;margin:0}
-    .rail-row{display:flex;align-items:center;gap:11px;padding:9px 0;cursor:pointer}
-    .rail-row+.rail-row{border-top:1px solid #f1f4fb}
-    .rail-row-name{font-weight:700;font-size:14px}
-    .rail-row-sub{font-size:12.5px;color:#9aa1b2}
-    .rail-count{margin-left:auto;font-size:13px;font-weight:700;color:#0ea98f}
-
-    /* Avatars */
-    .av{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Hanken Grotesque',sans-serif;flex:0 0 auto;line-height:1;object-fit:cover}
-    img.av{background:#e4e9f5}
-
-    /* Page header */
-    .page-head{display:flex;align-items:baseline;gap:12px}
-    .page-head h1{font-family:'Bricolage Grotesque',sans-serif;font-size:27px;font-weight:800;letter-spacing:-.02em}
-    .page-sub{color:#727a8c;font-size:14.5px}
-
-    /* Area chips */
-    .chips{display:flex;gap:9px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
-    .chips::-webkit-scrollbar{display:none}
-    .chip{flex:0 0 auto;border:1px solid #dde3f0;background:#fff;color:#525a6c;font-family:'Hanken Grotesque',sans-serif;font-weight:600;font-size:13.5px;padding:8px 15px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:border-color .12s}
-    .chip:hover{border-color:#bcc6db}
-    .chip.active{color:#fff;border-color:transparent}
-    .chip-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-    .suggest-chip{flex:0 0 auto;background:none;border:1px dashed #c2cbe0;color:#9aa1b2;font-family:'Hanken Grotesque',sans-serif;font-weight:600;font-size:13px;padding:8px 15px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:border-color .12s,color .12s}
-    .suggest-chip:hover{border-color:#9aa1b2;color:#535a6b}
-
-    /* Post prompt */
-    .post-prompt{display:flex;align-items:center;gap:12px;background:#fff;border-radius:18px;padding:13px 15px;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -16px rgba(27,29,40,.22);cursor:text}
-    .post-prompt-fake{flex:1;color:#9aa1b2;font-size:15px;font-weight:500}
-    .post-prompt-btn{flex:0 0 auto;background:#0ea98f;color:#fff;border:none;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:14px;padding:9px 18px;border-radius:11px;cursor:pointer;transition:background .12s}
-    .post-prompt-btn:hover{background:#0b8f78}
-
-    /* Composer */
-    .composer-card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -16px rgba(27,29,40,.22)}
-    .composer-row{display:flex;align-items:center;gap:11px;margin-bottom:13px}
-    .composer-title-input{width:100%;border:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;color:#1b1d28;outline:none;background:none}
-    .composer-title-input::placeholder{color:#b3bacb}
-    .composer-body-input{width:100%;border:none;background:none;font-family:'Hanken Grotesque',sans-serif;font-size:15px;line-height:1.5;color:#3a4052;outline:none;resize:none;min-height:62px}
-    .composer-body-input::placeholder{color:#b3bacb}
-    .composer-bar{display:flex;align-items:center;gap:9px;margin-top:6px;padding-top:13px;border-top:1px solid #eef1f7}
-    .area-picks{display:flex;gap:7px;flex-wrap:wrap;flex:1;min-width:0}
-    .area-pick{border:1px solid #dde3f0;background:#fff;color:#525a6c;font-family:'Hanken Grotesque',sans-serif;font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .12s;white-space:nowrap}
-    .area-pick.active{color:#fff;border-color:transparent}
-    .composer-submit{background:#0ea98f;color:#fff;border:none;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:14.5px;padding:10px 22px;border-radius:11px;cursor:pointer;flex:0 0 auto;transition:background .12s}
-    .composer-submit:hover{background:#0b8f78}
-    .composer-submit:disabled{background:#c2cbe0;cursor:default}
-
-    /* Feed tabs */
-    .feed-tabs{display:flex;gap:4px;background:#e4e9f5;padding:4px;border-radius:12px;width:max-content}
-    .feed-tab{border:none;background:none;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:14px;color:#6b7283;padding:8px 20px;border-radius:9px;cursor:pointer;transition:background .12s,color .12s}
-    .feed-tab.active{background:#fff;color:#1b1d28;box-shadow:0 2px 6px -2px rgba(27,29,40,.18)}
-
-    /* Post card */
-    .card{background:#fff;border-radius:18px;padding:18px 19px;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -16px rgba(27,29,40,.22)}
-    .phead{display:flex;align-items:center;gap:11px;margin-bottom:13px}
-    .pinfo{min-width:0;flex:1}
-    .pauthor{font-weight:700;font-size:15px;color:#1b1d28;cursor:pointer;white-space:nowrap}
-    .pauthor.nolink{cursor:default}
-    .pmeta{font-size:12.5px;color:#9aa1b2}
-    .abadge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;margin-left:auto;white-space:nowrap;flex:0 0 auto}
-    .ptitle{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0 0 5px}
-    .pbody{font-size:15px;line-height:1.55;color:#3a4052;margin:0;white-space:pre-wrap;word-break:break-word}
-    .ptags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-    .ptag{font-size:12.5px;color:#677088;background:#f1f4fb;padding:4px 11px;border-radius:8px;font-weight:600}
-    .pacts{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:13px;border-top:1px solid #eef1f7}
-    .pact{display:flex;align-items:center;gap:7px;border:none;background:none;color:#6b7283;font-family:'Hanken Grotesque',sans-serif;font-weight:600;font-size:14px;padding:7px 11px;border-radius:10px;cursor:pointer;transition:background .12s}
-    .pact:hover{background:#f1f4fb}
-    .pact svg{width:18px;height:18px}
-    .pact.liked{color:#ff4d6d}
-    .pact.liked svg{fill:#ff4d6d}
-    .pact.del-act{margin-left:auto;color:#e85555}
-    .pact.del-act:hover{background:rgba(239,68,68,.08)}
-
-    /* Post menu */
-    .post-menu{position:relative;margin-left:auto}
-    .post-menu-btn{background:none;border:none;color:#9aa1b2;font-size:18px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .12s,color .12s}
-    .post-menu-btn:hover{background:#f1f4fb;color:#535a6b}
-    .post-menu-dropdown{position:absolute;top:100%;right:0;background:#fff;border:1px solid #e6eaf3;border-radius:12px;min-width:150px;box-shadow:0 4px 16px rgba(27,29,40,.14);z-index:100;display:none}
-    .post-menu-dropdown.open{display:block}
-    .post-menu-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#3a4052;padding:10px 14px;font-size:14px;font-family:'Hanken Grotesque',sans-serif;cursor:pointer;transition:background .12s}
-    .post-menu-dropdown button:first-child{border-radius:11px 11px 0 0}
-    .post-menu-dropdown button:last-child{border-radius:0 0 11px 11px}
-    .post-menu-dropdown button:hover{background:#f1f4fb}
-
-    /* Announcement feed banner */
-    .announcement{position:relative;border-radius:18px;padding:17px 44px 17px 17px;background:linear-gradient(135deg,#fff4ec,#ffe9ef);border:1px solid #ffd9c2}
-    .announcement .ann-label{font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#ff6b3d;margin:0 0 7px}
-    .announcement .ann-title{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;margin:0 0 5px;color:#1b1d28}
-    .announcement .ann-body{font-size:13.5px;line-height:1.5;color:#6a5043;white-space:pre-wrap;word-break:break-word}
-    .announcement .ann-time{font-size:11px;color:#9aa1b2;margin-top:8px}
-    .announcement .ann-dismiss{position:absolute;top:10px;right:12px;cursor:pointer;color:#9aa1b2;background:none;border:none;font-size:20px;line-height:1;transition:color .12s}
-    .announcement .ann-dismiss:hover{color:#535a6b}
-
-    /* Search */
-    .searchbox{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e7f1;border-radius:14px;padding:12px 16px;box-shadow:0 1px 2px rgba(27,29,40,.04)}
-    .searchbox input{flex:1;border:none;outline:none;font-family:'Hanken Grotesque',sans-serif;font-size:15px;color:#1b1d28;background:none}
-    .searchbox input::placeholder{color:#b3bacb}
-    .searchbox svg{width:19px;height:19px;color:#9aa1b2;flex:0 0 auto}
-    .search-clear-btn{background:none;border:none;color:#9aa1b2;font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
-    .search-clear-btn:hover{color:#535a6b}
-    .search-heading{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa1b2;margin:12px 2px 6px}
-    .user-result{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:13px 16px;cursor:pointer;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -18px rgba(27,29,40,.2);transition:transform .12s}
-    .user-result:hover{transform:translateY(-1px)}
-    .user-result-name{font-weight:700;font-size:14px;color:#1b1d28}
-
-    /* Areas grid */
-    .areas-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .area-card{border-radius:18px;padding:18px;cursor:pointer;color:#fff;position:relative;overflow:hidden;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 10px 26px -14px rgba(27,29,40,.5);transition:transform .12s}
-    .area-card:hover{transform:translateY(-2px)}
-    .area-icon{position:absolute;top:14px;right:15px;font-size:26px;opacity:.9}
-    .area-name{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;margin:0}
-    .area-blurb{font-size:13px;opacity:.93;margin:4px 0 0;line-height:1.35}
-    .area-count{font-size:12.5px;opacity:.82;margin:7px 0 0;font-weight:600}
-    .suggest-area-btn-big{display:flex;align-items:center;justify-content:center;padding:14px;border-radius:18px;border:2px dashed #c2cbe0;background:none;color:#9aa1b2;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:border-color .12s,color .12s;width:100%}
-    .suggest-area-btn-big:hover{border-color:#9aa1b2;color:#535a6b}
-
-    /* Profile */
-    .profile-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 1px 2px rgba(27,29,40,.04),0 10px 30px -18px rgba(27,29,40,.3)}
-    .profile-banner{height:96px;background:linear-gradient(120deg,#0ea98f,#19c3a6 50%,#ffb347)}
-    .profile-inner{padding:0 22px 22px}
-    .profile-av{margin-top:-44px;border:5px solid #fff}
-    .profile-name{font-family:'Bricolage Grotesque',sans-serif;font-size:23px;font-weight:800;margin:11px 0 2px;letter-spacing:-.01em}
-    .profile-handle{color:#8b93a5;font-size:14px;margin:0}
-    .profile-bio{font-size:14.5px;line-height:1.55;color:#3a4052;margin:13px 0}
-    .profile-stats{display:flex;gap:26px;margin:14px 0 4px}
-    .profile-stat b{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;display:block}
-    .profile-stat span{font-size:12.5px;color:#8b93a5}
-    .ghost-btn{border:1px solid #d4d9e6;background:#fff;color:#1b1d28;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:14px;padding:9px 18px;border-radius:11px;cursor:pointer;transition:background .12s;margin-top:10px}
-    .ghost-btn:hover{background:#f1f4fb}
-    .section-label{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa1b2;margin:16px 0 8px}
-    .profile-edit textarea{width:100%;background:#f7f8fc;border:1px solid #e6eaf3;color:#1b1d28;border-radius:11px;padding:10px 12px;font-family:'Hanken Grotesque',sans-serif;font-size:14px;outline:none;margin-bottom:8px}
-    .profile-edit textarea:focus{border-color:#0ea98f}
-    .profile-audiences .label{font-size:12px;color:#9aa1b2;margin-bottom:6px}
-
-    /* Sign-in card */
-    .signin-card{background:#fff;border-radius:18px;padding:32px 24px;text-align:center;box-shadow:0 1px 2px rgba(27,29,40,.04),0 8px 24px -16px rgba(27,29,40,.22)}
-    .signin-card p{color:#727a8c;margin-bottom:20px;font-size:15px}
-    .btn-google{display:inline-flex;align-items:center;gap:10px;background:#fff;color:#1b1d28;border:1px solid #d4d9e6;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:15px;padding:12px 24px;border-radius:11px;cursor:pointer;transition:background .12s,box-shadow .12s}
-    .btn-google:hover{background:#f7f8fc;box-shadow:0 2px 8px rgba(27,29,40,.12)}
-    .btn-google svg{width:18px;height:18px}
-
-    /* Toast */
-    #toast{position:fixed;top:0;left:0;right:0;z-index:9999;padding:14px 20px;text-align:center;font-size:15px;font-weight:600;transform:translateY(-100%);transition:transform .3s ease;pointer-events:none;font-family:'Hanken Grotesque',sans-serif}
-    #toast.show{transform:translateY(0);pointer-events:auto}
-    #toast.error{background:rgba(220,38,38,.92);color:#fee2e2;border-bottom:1px solid rgba(248,113,113,.5);backdrop-filter:blur(8px)}
-    #toast.info{background:rgba(14,169,143,.92);color:#fff;border-bottom:1px solid rgba(14,169,143,.5);backdrop-filter:blur(8px)}
-
-    /* Modals */
-    .modal-overlay{position:fixed;inset:0;background:rgba(27,29,40,.5);display:none;z-index:2000;align-items:center;justify-content:center}
-    .modal-overlay.open{display:flex}
-    .modal-dialog{background:#fff;border-radius:18px;padding:24px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(27,29,40,.2)}
-    .modal-header{font-size:18px;font-weight:700;margin-bottom:16px;color:#1b1d28;font-family:'Bricolage Grotesque',sans-serif}
-    .modal-close{float:right;background:none;border:none;color:#9aa1b2;font-size:24px;cursor:pointer;line-height:1;padding:0;width:24px;height:24px;transition:color .12s}
-    .modal-close:hover{color:#1b1d28}
-    .modal-body{display:flex;flex-direction:column;gap:12px}
-    .modal-body textarea,.modal-body input{width:100%;background:#f7f8fc;border:1px solid #e6eaf3;color:#1b1d28;border-radius:11px;padding:12px 14px;font-family:'Hanken Grotesque',sans-serif;font-size:14px;outline:none;resize:vertical;min-height:80px}
-    .modal-body input{min-height:auto;resize:none}
-    .modal-body textarea:focus,.modal-body input:focus{border-color:#0ea98f}
-    .modal-footer{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
-    .modal-footer button{padding:9px 20px;font-size:14px;border-radius:11px;font-family:'Hanken Grotesque',sans-serif;font-weight:700;cursor:pointer;border:none;transition:background .12s}
-    .btn-cancel{background:#f1f4fb;color:#535a6b;border:1px solid #e6eaf3 !important}
-    .btn-cancel:hover{background:#e4e9f5}
-    .btn-primary-modal{background:#0ea98f;color:#fff}
-    .btn-primary-modal:hover{background:#0b8f78}
-
-    /* Comments */
-    .comments{margin-top:12px;border-top:1px solid #eef1f7;padding-top:12px}
-    .comment{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;font-size:14px}
-    .comment .c-body{flex:1}
-    .comment .c-author{font-weight:700;color:#1b1d28;cursor:pointer}
-    .comment .c-author.nolink{cursor:default}
-    .comment .c-time{font-size:11px;color:#9aa1b2;margin-left:6px}
-    .comment .c-text{white-space:pre-wrap;word-break:break-word;color:#3a4052}
-    .comment .c-del{background:none;border:none;padding:2px 8px;color:#e85555;font-size:16px;line-height:1;cursor:pointer;border-radius:6px;transition:background .12s}
-    .comment .c-del:hover{background:rgba(239,68,68,.08)}
-    .comment-form{display:flex;gap:8px;margin-top:8px}
-    .comment-form input{flex:1;background:#f7f8fc;border:1px solid #e6eaf3;color:#1b1d28;border-radius:999px;padding:8px 14px;font-family:'Hanken Grotesque',sans-serif;font-size:13px;outline:none}
-    .comment-form input:focus{border-color:#0ea98f}
-    .comment-form button{background:#0ea98f;color:#fff;border:none;font-family:'Hanken Grotesque',sans-serif;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;cursor:pointer;transition:background .12s}
-    .comment-form button:hover{background:#0b8f78}
-
-    /* Reports */
-    .report-item{background:#f7f8fc;border:1px solid #e6eaf3;border-radius:12px;padding:14px;margin-bottom:12px}
-    .report-meta{font-size:12px;color:#9aa1b2;display:flex;gap:12px;margin-bottom:8px}
-    .report-reason{margin-bottom:8px;color:#3a4052}
-    .report-status{display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
-    .report-status.pending{background:rgba(245,165,36,.15);color:#b07800}
-    .report-status.reviewed{background:rgba(24,169,87,.15);color:#0e7040}
-    .report-status.dismissed{background:#f1f4fb;color:#727a8c}
-    .report-status.actioned{background:rgba(255,75,109,.12);color:#c0314c}
-
-    /* Misc */
-    .empty{text-align:center;color:#9aa1b2;padding:24px 0;font-size:15px}
-    .hidden{display:none !important}
-    .status-msg{text-align:center;min-height:20px;font-size:14px;color:#0ea98f;padding:4px 0}
-    .alpha-banner{background:#fff5cc;color:#7a5d00;text-align:center;font-size:12.5px;font-weight:600;padding:7px;font-family:'Hanken Grotesque',sans-serif}
-
-    /* Mobile top bar */
-    .mobile-top-bar{display:none;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;border-bottom:1px solid #e6eaf3;position:sticky;top:0;z-index:20}
-
-    /* Mobile bottom tab bar */
-    .mobile-tabbar{display:none;align-items:center;justify-content:space-around;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e6eaf3;padding:9px 6px calc(9px + env(safe-area-inset-bottom));z-index:20}
-    .tab-item{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:#9aa1b2;font-family:'Hanken Grotesque',sans-serif;font-size:10.5px;font-weight:600;cursor:pointer;padding:2px 10px;transition:color .12s}
-    .tab-item.active{color:#0ea98f}
-    .tab-item svg{width:24px;height:24px}
-    .fab-tab{width:46px;height:46px;border-radius:15px;background:#0ea98f;color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-22px;box-shadow:0 6px 16px -6px rgba(14,169,143,.5);border:none;cursor:pointer}
-    .fab-tab svg{width:26px;height:26px}
-
-    /* Responsive */
-    @media(max-width:1024px){.shell{grid-template-columns:248px minmax(0,1fr)}.right-rail{display:none}}
-    @media(max-width:640px){.shell{display:block;padding:0}.sidebar{display:none}.right-rail{display:none}.mobile-top-bar{display:flex}.mobile-tabbar{display:flex}.center-col{padding:14px 14px 96px;gap:14px}}
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="toast"></div>
@@ -266,7 +18,7 @@
       <div class="logo-mark" style="width:32px;height:32px;font-size:17px;border-radius:9px">C</div>
       <div class="brand-name" style="font-size:18px">ConnectEd</div>
     </div>
-    <span class="av hidden" id="mobileAvatar" style="width:32px;height:32px;font-size:13px;background:#0ea98f;cursor:pointer"></span>
+    <span class="av hidden" id="mobileAvatar" style="width:32px;height:32px;font-size:13px;background:var(--primary);cursor:pointer"></span>
   </div>
 
   <div class="shell">
@@ -297,7 +49,7 @@
         New post
       </button>
       <div class="me-row hidden" id="sidebarMe">
-        <span class="av" id="sidebarAvatar" style="width:38px;height:38px;font-size:15px;background:#0ea98f"></span>
+        <span class="av" id="sidebarAvatar" style="width:38px;height:38px;font-size:15px;background:var(--primary)"></span>
         <div>
           <div class="me-name" id="sidebarName"></div>
           <div class="me-sub">You</div>
@@ -333,17 +85,24 @@
             </svg>
             Continue with Google
           </button>
+          <button class="email-auth-toggle" id="emailAuthToggle">Sign in with email instead</button>
+          <div class="email-auth-form" id="emailAuthForm">
+            <input type="email" id="emailAuthEmail" placeholder="Email" autocomplete="email" />
+            <input type="password" id="emailAuthPassword" placeholder="Password" autocomplete="current-password" />
+            <button type="button" class="btn-email" id="emailAuthSubmit">Sign in</button>
+            <div class="email-auth-err" id="emailAuthErr"></div>
+          </div>
         </div>
 
         <div class="post-prompt hidden" id="postPrompt">
-          <span class="av" id="promptAvatar" style="width:40px;height:40px;font-size:16px;background:#0ea98f"></span>
+          <span class="av" id="promptAvatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)"></span>
           <div class="post-prompt-fake">Share something with your school…</div>
           <button class="post-prompt-btn" id="postPromptBtn">Post</button>
         </div>
 
         <form class="composer-card hidden" id="composer">
           <div class="composer-row">
-            <span class="av" id="composerAvatar" style="width:40px;height:40px;font-size:16px;background:#0ea98f"></span>
+            <span class="av" id="composerAvatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)"></span>
             <input class="composer-title-input" id="title" type="text" maxlength="200" placeholder="Add a title (optional)" />
           </div>
           <textarea class="composer-body-input" id="content" rows="3" maxlength="4000" placeholder="What do you want to share with the school?"></textarea>
@@ -445,7 +204,7 @@
       <div class="modal-header">Report <span id="reportWhat"></span></div>
       <div class="modal-body">
         <textarea id="reportReason" maxlength="1000" placeholder="Tell us why you're reporting this (required)"></textarea>
-        <div id="reportStatus" style="text-align:center;min-height:20px;font-size:14px;color:#0ea98f"></div>
+        <div id="reportStatus" style="text-align:center;min-height:20px;font-size:14px;color:var(--primary)"></div>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" id="reportCancel">Cancel</button>
@@ -463,7 +222,7 @@
         <p style="color:#727a8c;font-size:13px">Suggestions are reviewed by admins. You'll stay anonymous.</p>
         <input id="suggestAreaName" type="text" maxlength="50" placeholder="Area name (required)" />
         <textarea id="suggestAreaReason" maxlength="300" placeholder="Why would this be useful? (optional)" style="min-height:80px"></textarea>
-        <div id="suggestAreaStatus" style="text-align:center;min-height:18px;font-size:14px;color:#0ea98f"></div>
+        <div id="suggestAreaStatus" style="text-align:center;min-height:18px;font-size:14px;color:var(--primary)"></div>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" id="suggestAreaCancel">Cancel</button>

@@ -33,6 +33,57 @@
     'sports': '🏀', 'clubs': '🎭', 'events': '🎉',
     'help & homework': '📚', 'help': '📚', 'random': '💬',
   };
+  // ---- Theming: a saved style is one Supabase row of token -> value ----
+  // Each entry maps a column to a CSS custom property on :root. A style row can
+  // carry one column per key (hyphen or underscore names both work); applyTheme
+  // writes whatever the row provides and leaves the rest at stylesheet defaults.
+  const THEME_VARS = [
+    'primary', 'primary-hover', 'primary-deep', 'primary-soft', 'brand-grad',
+    'text', 'text-body', 'text-soft', 'text-muted', 'text-faint', 'placeholder',
+    'bg', 'surface', 'surface-2', 'surface-3', 'surface-4',
+    'border', 'border-2', 'border-strong', 'hairline',
+    'like', 'danger',
+    'font-head', 'font-body',
+    'radius-card', 'radius-btn', 'radius-pill', 'shadow-card',
+  ];
+  function applyTheme(row) {
+    const root = document.documentElement.style;
+    if (!row) return;
+    for (const key of THEME_VARS) {
+      const v = row[key] ?? row[key.replace(/-/g, '_')];
+      if (v != null && v !== '') root.setProperty(`--${key}`, String(v));
+    }
+  }
+  function clearTheme() {
+    const root = document.documentElement.style;
+    for (const key of THEME_VARS) root.removeProperty(`--${key}`);
+  }
+  window.applyTheme = applyTheme;
+  window.clearTheme = clearTheme;
+
+  // A style lives in the `styles` table (one column per token). By default the
+  // client applies the row flagged is_default; a locally-chosen style overrides it.
+  const STYLE_KEY = 'ce_active_style';
+  async function loadActiveStyle() {
+    try {
+      const cached = localStorage.getItem(STYLE_KEY);
+      if (cached) { applyTheme(JSON.parse(cached)); return; }
+    } catch {}
+    const { data, error } = await supabase.from('styles').select('*').eq('is_default', true).limit(1).single();
+    if (!error && data) applyTheme(data);
+  }
+  function setActiveStyle(row) {
+    applyTheme(row);
+    try { localStorage.setItem(STYLE_KEY, JSON.stringify(row)); } catch {}
+  }
+  function resetActiveStyle() {
+    try { localStorage.removeItem(STYLE_KEY); } catch {}
+    clearTheme();
+    loadActiveStyle();
+  }
+  window.setActiveStyle = setActiveStyle;
+  window.resetActiveStyle = resetActiveStyle;
+
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
   function areaEmoji(a) { return a.emoji || AREA_EMOJIS[(a.name || '').toLowerCase()] || '📌'; }
@@ -332,7 +383,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5A8 8 0 1 1 21 12z"/></svg>
             <span class="comment-count">${p.commentCount}</span>
           </button>
-          <button class="pact" data-act="dislike" data-post-id="${p.id}" title="Not for me" style="color:${p.disliked ? '#727a8c' : '#9aa1b2'}">
+          <button class="pact dislike ${p.disliked ? 'disliked' : ''}" data-act="dislike" data-post-id="${p.id}" title="Not for me" style="color:${p.disliked ? '#727a8c' : '#9aa1b2'}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.7a2 2 0 0 0-2 1.7L2 11a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.3A2 2 0 0 1 21 4v7a2 2 0 0 1-2 2H17"/></svg>
           </button>
           ${own ? `<button class="pact del-act" data-act="del-post" data-post-id="${p.id}">🗑️Delete</button>` : ''}
@@ -457,30 +508,33 @@
       `<button class="suggest-chip">+ Suggest area</button>`;
   }
 
+  let selectedPickId = null;
+  function paintAreaPicks() {
+    document.querySelectorAll('[data-area-pick]').forEach((b) => {
+      const bid = parseInt(b.dataset.areaPick, 10);
+      const active = bid === selectedPickId;
+      const color = areaColor(areas.find((a) => a.id === bid)?.name);
+      b.classList.toggle('active', active);
+      b.style.background = active ? color : '';
+      b.style.color = active ? '#fff' : '';
+      b.style.borderColor = active ? 'transparent' : '';
+    });
+  }
+  function resetAreaPicks() { selectedPickId = null; paintAreaPicks(); }
+  els.areaPicks?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-area-pick]');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.areaPick, 10);
+    selectedPickId = selectedPickId === id ? null : id;
+    paintAreaPicks();
+  });
   function renderAreaPicks() {
     if (!els.areaPicks) return;
     els.areaPicks.innerHTML = areas.map((a) => {
       const color = areaColor(a.name);
       return `<button type="button" class="area-pick" data-area-pick="${a.id}" style=""><span class="chip-dot" style="background:${color}"></span>${esc(a.name)}</button>`;
     }).join('');
-    let selectedPickId = null;
-    els.areaPicks.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-area-pick]');
-      if (!btn) return;
-      const id = parseInt(btn.dataset.areaPick, 10);
-      selectedPickId = selectedPickId === id ? null : id;
-      document.querySelectorAll('[data-area-pick]').forEach((b) => {
-        const bid = parseInt(b.dataset.areaPick, 10);
-        const active = bid === selectedPickId;
-        const color = areaColor(areas.find((a) => a.id === bid)?.name);
-        b.classList.toggle('active', active);
-        b.style.background = active ? color : '';
-        b.style.color = active ? '#fff' : '';
-        b.style.borderColor = active ? 'transparent' : '';
-      });
-    });
-    // Expose selected id for form submit
-    els.areaPicks._getSelected = () => selectedPickId;
+    paintAreaPicks();
   }
 
   function renderAreasGrid() {
@@ -529,9 +583,7 @@
   document.addEventListener('click', (e) => {
     const card = e.target.closest('[data-area-nav]');
     if (card) {
-      selectedAreaId = parseInt(card.dataset.areaNave || card.dataset.areaNav, 10) || null;
-      // fix typo: always use areaNav
-      selectedAreaId = parseInt(card.getAttribute('data-area-nav'), 10) || null;
+      selectedAreaId = parseInt(card.dataset.areaNav, 10) || null;
       renderAreaStrip();
       showScreen('home');
     }
@@ -638,15 +690,13 @@
     }
     els.postBtn.disabled = true; els.status.textContent = 'Posting…';
     try {
-      const areaId = els.areaPicks?._getSelected?.() || null;
+      const areaId = selectedPickId || null;
       const { data, error } = await supabase.from('Posts')
         .insert({ title: title || null, content, 'creator-id': currentProfile['creator-id'], area_id: areaId })
         .select('"post-id"').single();
       if (error) throw error;
       els.content.value = ''; els.title.value = '';
-      // Reset area picks
-      document.querySelectorAll('[data-area-pick]').forEach((b) => { b.classList.remove('active'); b.style.background = ''; b.style.color = ''; b.style.borderColor = ''; });
-      if (els.areaPicks) els.areaPicks._getSelected = () => null;
+      resetAreaPicks();
       els.status.textContent = 'Posted! Tagging…';
       try { await supabase.functions.invoke('tag-post', { body: { post_id: data['post-id'] } }); } catch (tagErr) { console.warn('tagging failed', tagErr); }
       els.status.textContent = 'Posted!';
@@ -674,8 +724,10 @@
         if (error) throw error;
         likeBtn.classList.add('liked'); setCount(countEl, +1);
         svg.setAttribute('fill', '#ff4d6d'); svg.setAttribute('stroke', '#ff4d6d');
-        if (disBtn) disBtn.style.color = '#9aa1b2';
-        if (disBtn) await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+        if (disBtn && disBtn.classList.contains('disliked')) {
+          disBtn.classList.remove('disliked'); disBtn.style.color = '#9aa1b2';
+          await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
+        }
       }
     } catch (err) { console.error('like failed', err); }
   }
@@ -687,14 +739,14 @@
     const countEl = likeBtn.querySelector('.like-count');
     const svg = likeBtn.querySelector('svg');
     try {
-      if (disBtn.style.color === '#727a8c') {
+      if (disBtn.classList.contains('disliked')) {
         const { error } = await supabase.from('Dislikes').delete().eq('post_id', postId).eq('user_id', authUserId);
         if (error) throw error;
-        disBtn.style.color = '#9aa1b2';
+        disBtn.classList.remove('disliked'); disBtn.style.color = '#9aa1b2';
       } else {
         const { error } = await supabase.from('Dislikes').insert({ post_id: postId, user_id: authUserId });
         if (error) throw error;
-        disBtn.style.color = '#727a8c';
+        disBtn.classList.add('disliked'); disBtn.style.color = '#727a8c';
         if (likeBtn.classList.contains('liked')) {
           await supabase.from('Likes').delete().eq('post_id', postId).eq('user_id', authUserId);
           likeBtn.classList.remove('liked'); setCount(countEl, -1);
@@ -749,7 +801,7 @@
     } catch (err) { console.error(err); }
   }
   function bumpCommentCount(postId, delta) {
-    document.querySelectorAll(`[data-post-id="${postId}"]`).forEach((card) => {
+    document.querySelectorAll(`.card[data-post-id="${postId}"]`).forEach((card) => {
       const span = card.querySelector('.comment-count'); if (span) setCount(span, delta);
     });
   }
@@ -853,6 +905,24 @@
   // ---- Event delegation ----
   els.signInBtn.addEventListener('click', signIn);
   els.signOutBtn.addEventListener('click', signOut);
+
+  // Email/password sign-in
+  document.getElementById('emailAuthToggle')?.addEventListener('click', () => {
+    const form = document.getElementById('emailAuthForm');
+    form?.classList.toggle('open');
+  });
+  document.getElementById('emailAuthSubmit')?.addEventListener('click', async () => {
+    const email = document.getElementById('emailAuthEmail')?.value.trim();
+    const password = document.getElementById('emailAuthPassword')?.value;
+    const errEl = document.getElementById('emailAuthErr');
+    if (!email || !password) { if (errEl) { errEl.textContent = 'Enter your email and password.'; errEl.style.display = 'block'; } return; }
+    const btn = document.getElementById('emailAuthSubmit');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign in';
+    if (error) { if (errEl) { errEl.textContent = error.message; errEl.style.display = 'block'; } }
+    else { if (errEl) errEl.style.display = 'none'; }
+  });
   els.myReportsBtn?.addEventListener('click', openMyReports);
 
   document.addEventListener('click', (e) => {
@@ -908,6 +978,7 @@
 
   // ---- Init ----
   (async () => {
+    loadActiveStyle();
     const { data } = await supabase.auth.getSession();
     await applyAuthState(data.session);
     await loadAreas();
