@@ -7,6 +7,50 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <!-- Theme helpers: defined inline (no module/Supabase deps) so they are
+       always callable from the console — applyTheme/setActiveStyle/etc. -->
+  <script>
+    (function () {
+      var THEME_VARS = [
+        'primary','primary-hover','primary-deep','primary-soft','brand-grad',
+        'text','text-body','text-soft','text-muted','text-faint','placeholder',
+        'bg','surface','surface-2','surface-3','surface-4',
+        'border','border-2','border-strong','hairline',
+        'like','danger','font-head','font-body',
+        'radius-card','radius-btn','radius-pill','shadow-card'
+      ];
+      var STYLE_KEY = 'ce_active_style';
+      function applyTheme(row) {
+        if (!row) return;
+        var root = document.documentElement.style;
+        for (var i = 0; i < THEME_VARS.length; i++) {
+          var key = THEME_VARS[i];
+          var v = row[key];
+          if (v == null) v = row[key.replace(/-/g, '_')];
+          if (v != null && v !== '') root.setProperty('--' + key, String(v));
+        }
+      }
+      function clearTheme() {
+        var root = document.documentElement.style;
+        for (var i = 0; i < THEME_VARS.length; i++) root.removeProperty('--' + THEME_VARS[i]);
+      }
+      function setActiveStyle(row) {
+        applyTheme(row);
+        try { localStorage.setItem(STYLE_KEY, JSON.stringify(row)); } catch (e) {}
+      }
+      function resetActiveStyle() {
+        try { localStorage.removeItem(STYLE_KEY); } catch (e) {}
+        clearTheme();
+        if (window.loadActiveStyle) window.loadActiveStyle();
+      }
+      window.applyTheme = applyTheme;
+      window.clearTheme = clearTheme;
+      window.setActiveStyle = setActiveStyle;
+      window.resetActiveStyle = resetActiveStyle;
+      // Apply a locally-saved style right away (no flash, no dependencies).
+      try { var c = localStorage.getItem(STYLE_KEY); if (c) applyTheme(JSON.parse(c)); } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div id="toast"></div>
