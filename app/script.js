@@ -61,6 +61,29 @@
   window.applyTheme = applyTheme;
   window.clearTheme = clearTheme;
 
+  // A style lives in the `styles` table (one column per token). By default the
+  // client applies the row flagged is_default; a locally-chosen style overrides it.
+  const STYLE_KEY = 'ce_active_style';
+  async function loadActiveStyle() {
+    try {
+      const cached = localStorage.getItem(STYLE_KEY);
+      if (cached) { applyTheme(JSON.parse(cached)); return; }
+    } catch {}
+    const { data, error } = await supabase.from('styles').select('*').eq('is_default', true).limit(1).single();
+    if (!error && data) applyTheme(data);
+  }
+  function setActiveStyle(row) {
+    applyTheme(row);
+    try { localStorage.setItem(STYLE_KEY, JSON.stringify(row)); } catch {}
+  }
+  function resetActiveStyle() {
+    try { localStorage.removeItem(STYLE_KEY); } catch {}
+    clearTheme();
+    loadActiveStyle();
+  }
+  window.setActiveStyle = setActiveStyle;
+  window.resetActiveStyle = resetActiveStyle;
+
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
   function areaEmoji(a) { return a.emoji || AREA_EMOJIS[(a.name || '').toLowerCase()] || '📌'; }
@@ -955,6 +978,7 @@
 
   // ---- Init ----
   (async () => {
+    loadActiveStyle();
     const { data } = await supabase.auth.getSession();
     await applyAuthState(data.session);
     await loadAreas();
