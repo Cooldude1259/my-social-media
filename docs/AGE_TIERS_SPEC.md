@@ -1,4 +1,4 @@
-# ConnectEd — Age Tiers & Regional Policy (spec / plan)
+# Mellow — Age Tiers & Regional Policy (spec / plan)
 
 Status: **design, not yet built.** This captures the agreed model so we build
 against something fixed. Nothing here is legal advice; the policy values and
@@ -8,7 +8,7 @@ consent mechanism need real legal review before launch.
 
 ## 1. Premise
 
-ConnectEd is shifting from school-only to a broader audience that still leans
+Mellow is shifting from school-only to a broader audience that still leans
 school-focused. Access and experience are organised by **age tier**, computed
 **per country**, so each group gets the right experience and the right legal
 protection automatically.

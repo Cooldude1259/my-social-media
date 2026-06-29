@@ -1,4 +1,4 @@
-# ConnectEd — Theme/Style API (agent contract)
+# Mellow — Theme/Style API (agent contract)
 
 This document is the complete spec for generating a **style**. Give it to an
 agent; the agent returns **one JSON object** that becomes one row in the

@@ -1,6 +1,6 @@
-# Google Auth Setup (ConnectEd Cloud)
+# Google Auth Setup (Mellow Cloud)
 
-ConnectEd uses Supabase Auth with Google as the identity provider. The app
+Mellow uses Supabase Auth with Google as the identity provider. The app
 runs inside a `WKWebView` under a custom `app://root` origin, and **Google
 blocks OAuth inside embedded webviews**, so sign-in is built two ways:
 

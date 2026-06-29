@@ -1,6 +1,6 @@
 # Feed, Auto-Tagging & Audiences
 
-ConnectEd has a personalized, audience-aware feed driven by an AI tagger and a
+Mellow has a personalized, audience-aware feed driven by an AI tagger and a
 hidden dislike signal.
 
 ## How it works
