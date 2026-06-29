@@ -1,138 +1,97 @@
-# ConnectEd - The Future of Social Media
+# Mellow
 
 ![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![HTML](https://img.shields.io/badge/Language-HTML-orange.svg)
-![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)
+![Status](https://img.shields.io/badge/Status-Alpha-yellow.svg)
 
-## 📱 About
+## About
 
-**ConnectEd** is a modern, school-focused social media platform. This repository contains the frontend for the ConnectEd application, designed with a futuristic, cosmic aesthetic and smooth floating animations.
+**Mellow** is social media that's actually on your side — a friendlier, safer
+place to be online. Where the big platforms got huge by hooking people and
+selling their data, Mellow is built the other way around: safety and real care
+for the people in it come first, not last. It leans school-friendly for younger
+users and opens up to a broader audience as people grow, with protections that
+fit whoever you are.
 
-The application is structured as a web-based interface intended to feel like a native app, with potential backend integration through Vercel for scalability and performance.
+The brand identity is a marshmallow over a campfire — warm, calm, a friendly
+rebellion against big social.
 
-## 🚀 Project Goals
+> Early alpha. Things will wobble and change.
 
-- Create an innovative social media platform specifically designed for school communities
-- Deliver a seamless, app-like experience through a web-based interface
-- Provide elegant, futuristic UI with smooth animations and cosmic theming
-- Enable future integration with backend services via Vercel
+## Tech stack
 
-## 📁 Project Structure
+Mellow is deliberately **buildless static HTML** — no framework, no build step.
+
+- **Frontend**: plain HTML/CSS/JS served as static files
+- **Styling**: a single tokenised stylesheet (`app/styles.css`) driven by CSS
+  custom properties (see Theming below)
+- **Fonts**: Bricolage Grotesque (headings) + Hanken Grotesque (body)
+- **Auth & data**: Supabase (JS SDK loaded from a CDN), schema `social-media-public`
+- **Backend (planned)**: a Vercel service reached only via a Supabase
+  `proxy_api` edge function, for agent/AI work
+
+## Project structure
 
 ```
 my-social-media/
-├── index.html              # Main landing page with animations
-├── auth.html               # Authentication page (Sign up / Sign in / Sign out)
-├── app-manifest.json       # App configuration and metadata
-├── DESIGN_NOTES.md         # Design philosophy and animation guidelines
-├── LICENSE                 # MIT License
-└── README.md               # This file
+├── index.html                  # Marketing landing page
+├── updates.html                # Updates & known issues
+├── app/
+│   ├── index.html              # The app shell (UI markup + inline theme helpers)
+│   ├── script.js               # App logic (Supabase, feed, profiles, theming)
+│   ├── styles.css              # Tokenised stylesheet (:root design tokens)
+│   ├── styles.schema.sql       # Snapshot of the `styles` table
+│   ├── THEME_API.md            # Agent contract for generating a style
+│   ├── admin.html / admin.js   # Admin tools
+├── docs/
+│   └── AGE_TIERS_SPEC.md       # Age-tier & regional-policy design spec
+├── ADMIN.md                    # Admin command reference
+├── AUTH_SETUP.md               # Google/Supabase auth setup
+├── FEED_AI_SETUP.md            # AI-tagged personalized feed setup
+├── TRUST_AND_SAFETY_FRAMEWORK.md
+└── DESIGN_NOTES.md             # (legacy) design notes
 ```
 
-## 🎨 Design & Features
+## Theming
 
-### Visual Design
-- **Theme**: Space/cosmic aesthetic with mystical, ethereal feeling
-- **Color Palette**: Deep purples, electric blues, and glowing accents on dark backgrounds
-- **Animation Style**: Gentle "breathing" floating animations with organic, natural motion
-- **Effects**: 
-  - Animated gradient blobs in the background
-  - Smooth, staggered animations for all content
-  - Glowing hover effects on interactive elements
-  - Screen blend modes for depth and visual interest
+Every colour, font, radius and shadow is a CSS custom property defined in
+`:root` (`app/styles.css`). A **style** is just a set of values for those
+tokens, stored as one row in the Supabase `styles` table (one column per token).
 
-### Key Components
+- `applyTheme(row)` writes a style onto `:root` at runtime; omitted tokens keep
+  their defaults. It's defined inline in `app/index.html`, so it's always
+  callable from the browser console.
+- `setActiveStyle(row)` applies and remembers a style on the device;
+  `resetActiveStyle()` reverts to the default.
+- The client loads the `is_default` style on startup.
+- See `app/THEME_API.md` for the full token reference and the contract an agent
+  follows to produce a style.
 
-#### `index.html` - Landing Page
-- Hero introduction to ConnectEd
-- Animated floating blobs background
-- Call-to-action sign in/register button
-- Project vision and roadmap information
-- Custom typography using Orbitron and Quicksand fonts
+## Getting started
 
-#### `auth.html` - Authentication
-- Sign-up form for new users
-- Sign-in form for existing users
-- Sign-out functionality
-- Integration with Supabase for authentication (requires configuration)
-- Clean, minimal authentication interface
-
-#### `app-manifest.json` - Configuration
-- Vercel backend domain configuration
-- Web shell URL setup
-- Required assets declaration
-
-## 🛠️ Technical Stack
-
-- **Frontend**: HTML, CSS (with advanced animations)
-- **Styling**: Custom CSS with keyframe animations
-- **Fonts**: Google Fonts (Orbitron, Quicksand)
-- **Authentication**: Supabase (JavaScript SDK)
-- **Deployment**: Vercel (planned backend)
-
-## 🎬 Animation Features
-
-All content includes smooth, subtle floating animations:
-- **Elements animate at different speeds** (2.5s - 4s duration)
-- **Max movement**: 8px - 15px to maintain elegance
-- **Timing**: ease-in-out for natural motion
-- **Background**: Continuous blob animations with 3D transforms and rotation
-
-See `DESIGN_NOTES.md` for detailed animation specifications.
-
-## 🔐 Authentication Setup
-
-To enable authentication features in `auth.html`:
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Update `auth.html` with your credentials:
-   ```javascript
-   const SUPABASE_URL = "YOUR_SUPABASE_URL";
-   const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
-   ```
-3. Test sign-up, sign-in, and sign-out functionality
-
-## 🚀 Getting Started
-
-1. Clone the repository:
+1. Clone the repo:
    ```bash
    git clone https://github.com/Cooldude1259/my-social-media.git
    ```
+2. Serve the folder (any static server), e.g.:
+   ```bash
+   python3 -m http.server 8765
+   ```
+3. Open `http://localhost:8765/` for the landing page, or
+   `http://localhost:8765/app/index.html` for the app.
+4. For auth/data, configure Supabase — see `AUTH_SETUP.md`.
 
-2. Open `index.html` in your browser to view the landing page
+## Direction
 
-3. Configure `auth.html` with Supabase credentials for full authentication functionality
+- **Age tiers** (Kids/School · Teen · Adult, with "mercy teens"), computed
+  **per country** via a data-driven policy layer — see `docs/AGE_TIERS_SPEC.md`.
+- Safety-first: reporting, blocking, and moderation built up for a
+  stranger-scale audience — see `TRUST_AND_SAFETY_FRAMEWORK.md`.
 
-4. Customize `app-manifest.json` with your Vercel backend domain
+## License
 
-## 📝 Design Philosophy
+MIT — see [LICENSE](LICENSE).
 
-This project follows these core principles (see `DESIGN_NOTES.md`):
-
-- ✨ **Magic Aesthetic**: Animations should feel mystical and enchanting
-- 🌬️ **Organic Motion**: Smooth, breathing animations—not mechanical or jarring
-- 🎯 **Subtle Effects**: Keep movements gentle (8px or less)
-- 🔄 **Staggered Timing**: Vary durations for natural, flowing motion
-- 📝 **Content Preservation**: Maintain original content integrity
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔮 Future Roadmap
-
-- [ ] Backend API integration with Vercel
-- [ ] User profiles and connections
-- [ ] Feed and content sharing
-- [ ] Real-time notifications
-- [ ] Mobile optimization
-- [ ] Advanced styling and customization
-- [ ] Community features for school networks
-
-## 👤 Author
+## Author
 
 [Cooldude1259](https://github.com/Cooldude1259)
-
----
-
-**The future will be coming soon, but patience is ALWAYS key.** ✨

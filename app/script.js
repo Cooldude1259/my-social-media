@@ -215,11 +215,21 @@
   }
   async function signOut() { await supabase.auth.signOut(); if (NATIVE_AUTH) window.webkit.messageHandlers.nativeAuth.postMessage({ action: 'signOut' }); }
 
+  // Generate a neutral display name. We deliberately never use the user's real
+  // name (collected via Google for safety/records, but never shown in-app).
+  const NAME_ADJ = ['Swift', 'Quiet', 'Bright', 'Cosmic', 'Lucky', 'Mellow', 'Bold', 'Clever', 'Sunny', 'Brave', 'Calm', 'Witty'];
+  const NAME_NOUN = ['Otter', 'Falcon', 'Maple', 'Comet', 'Fox', 'Heron', 'Willow', 'Badger', 'Finch', 'Cedar', 'Lynx', 'Robin'];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  function genDisplayName() {
+    return `${pick(NAME_ADJ)}${pick(NAME_NOUN)}${Math.floor(100 + Math.random() * 900)}`;
+  }
+
   async function ensureProfile(user) {
     const { data, error } = await supabase.from('Users').select('"creator-id", Name, account_status').eq('user_id', user.id).limit(1);
     if (error) throw error;
     if (data && data.length) return data[0];
-    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Member';
+    // New profile: default to a generated handle, NOT the real name from Google.
+    const name = genDisplayName();
     const ins = await supabase.from('Users').insert({ Name: name, user_id: user.id, avatar_url: user.user_metadata?.avatar_url || null })
       .select('"creator-id", Name, account_status').single();
     if (ins.error) throw ins.error;
@@ -238,7 +248,8 @@
           return;
         }
       } catch (e) { console.error(e); currentProfile = null; }
-      const name = currentProfile?.Name || authUser.user_metadata?.full_name || authUser.email || 'Member';
+      // Never fall back to the real name or email — display the handle only.
+      const name = currentProfile?.Name || 'Member';
       const avatarUrl = authUser.user_metadata?.avatar_url;
       // Sidebar
       if (els.sidebarName) els.sidebarName.textContent = name;

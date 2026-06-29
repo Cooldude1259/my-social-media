@@ -1,8 +1,8 @@
-# ConnectEd Trust & Safety Framework
+# Mellow Trust & Safety Framework
 
 ## Philosophy: Transparent Detection Over Accusation
 
-ConnectEd's safety approach is built on **transparency and trust**, not hidden judgment or punitive enforcement.
+Mellow's safety approach is built on **transparency and trust**, not hidden judgment or punitive enforcement.
 
 ### Core Distinction
 
@@ -331,7 +331,7 @@ This scales your moderation without sacrificing the human touch for important de
 
 ## Your Brand: "Transparent Safety"
 
-### How This Positions ConnectEd
+### How This Positions Mellow
 
 - **NOT:** "Heavily moderated" (feels restrictive)
 - **NOT:** "Anything goes" (feels unsafe)
