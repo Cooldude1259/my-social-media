@@ -54,7 +54,7 @@
 </head>
 <body>
   <div id="toast"></div>
-  <div class="alpha-banner">ConnectEd · Alpha — some features may be missing or unstable.</div>
+  <div class="alpha-banner">Early alpha — still building, so things may wobble. Thanks for being here.</div>
 
   <!-- Mobile top bar -->
   <div class="mobile-top-bar">
@@ -113,13 +113,13 @@
       <div id="homeView">
         <div>
           <div class="page-head"><h1>Home</h1></div>
-          <p class="page-sub">What's happening around school</p>
+          <p class="page-sub">What's happening with your people</p>
         </div>
         <div class="chips hidden" id="areaStrip"></div>
         <div id="announcements"></div>
 
         <div class="signin-card" id="signinPrompt">
-          <p>Sign in to post, like, comment and more.</p>
+          <p>Sign in to join in — post, react, and connect.</p>
           <button class="btn-google" id="signInBtn">
             <svg viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -140,7 +140,7 @@
 
         <div class="post-prompt hidden" id="postPrompt">
           <span class="av" id="promptAvatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)"></span>
-          <div class="post-prompt-fake">Share something with your school…</div>
+          <div class="post-prompt-fake">Share something with your people…</div>
           <button class="post-prompt-btn" id="postPromptBtn">Post</button>
         </div>
 
@@ -149,7 +149,7 @@
             <span class="av" id="composerAvatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)"></span>
             <input class="composer-title-input" id="title" type="text" maxlength="200" placeholder="Add a title (optional)" />
           </div>
-          <textarea class="composer-body-input" id="content" rows="3" maxlength="4000" placeholder="What do you want to share with the school?"></textarea>
+          <textarea class="composer-body-input" id="content" rows="3" maxlength="4000" placeholder="What do you want to share?"></textarea>
           <div class="composer-bar">
             <div class="area-picks" id="areaPicks"></div>
             <button type="submit" class="composer-submit" id="postBtn">Post</button>
@@ -185,7 +185,7 @@
       <div id="areasView" class="hidden">
         <div>
           <div class="page-head"><h1>Areas</h1></div>
-          <p class="page-sub">Jump into a corner of school life</p>
+          <p class="page-sub">Jump into a corner of the community</p>
         </div>
         <div class="areas-grid" id="areasGrid"></div>
         <button class="suggest-area-btn-big" id="suggestAreaTrigger" style="margin-top:14px">+ Suggest an area</button>
