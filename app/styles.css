@@ -321,8 +321,8 @@ img.av{background:var(--surface-4)}
 @keyframes mellow-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #homeView:not(.hidden),#searchView:not(.hidden),#areasView:not(.hidden),#profileView:not(.hidden),#myReportsView:not(.hidden){animation:mellow-in .28s var(--ease-soft) both}
 
-/* Feed tab swap: directional slide between For You / Latest */
-#posts.feed-anim{transition:transform .26s var(--ease-soft),opacity .26s var(--ease-soft)}
+/* Feed tab swap: quick directional crossfade between For You / Latest */
+#posts.feed-anim{transition:transform .17s var(--ease-soft),opacity .17s var(--ease-soft)}
 
 /* Respect users who prefer less motion */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
