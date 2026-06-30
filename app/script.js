@@ -446,8 +446,57 @@
     }
   }
 
-  els.tabForYou.addEventListener('click', () => { feedMode = 'foryou'; els.tabForYou.classList.add('active'); els.tabLatest.classList.remove('active'); loadFeed(); });
-  els.tabLatest.addEventListener('click', () => { feedMode = 'latest'; els.tabLatest.classList.add('active'); els.tabForYou.classList.remove('active'); loadFeed(); });
+  // Resolve once a transition/animation ends, or after a timeout fallback.
+  function once(el, evt, timeout) {
+    return new Promise((res) => {
+      let done = false;
+      const h = () => { if (done) return; done = true; el.removeEventListener(evt, h); res(); };
+      el.addEventListener(evt, h);
+      setTimeout(h, timeout);
+    });
+  }
+
+  // Directional feed swap: old feed slides out one way, new feed slides in from
+  // the other. For You -> Latest exits left / enters right; the reverse mirrors it.
+  let _switchingFeed = false;
+  async function switchFeed(newMode) {
+    if (newMode === feedMode || _switchingFeed) return;
+    _switchingFeed = true;
+    const toLatest = newMode === 'latest';
+    feedMode = newMode;
+    els.tabForYou.classList.toggle('active', newMode === 'foryou');
+    els.tabLatest.classList.toggle('active', newMode === 'latest');
+
+    const el = els.posts;
+    const outX = toLatest ? '-100%' : '100%'; // exit: left for ->Latest, right for ->ForYou
+    const inX = toLatest ? '100%' : '-100%';  // enter from the opposite side
+
+    // slide current feed out
+    el.classList.add('feed-anim');
+    el.style.transform = `translateX(${outX})`;
+    el.style.opacity = '0';
+    await once(el, 'transitionend', 320);
+
+    // jump to the incoming side (no transition) and load the new feed off-screen
+    el.classList.remove('feed-anim');
+    el.style.transform = `translateX(${inX})`;
+    void el.offsetWidth; // commit the jump
+    await loadFeed();
+
+    // slide the new feed in
+    el.classList.add('feed-anim');
+    el.style.transform = 'translateX(0)';
+    el.style.opacity = '1';
+    await once(el, 'transitionend', 320);
+
+    el.classList.remove('feed-anim');
+    el.style.transform = '';
+    el.style.opacity = '';
+    _switchingFeed = false;
+  }
+
+  els.tabForYou.addEventListener('click', () => switchFeed('foryou'));
+  els.tabLatest.addEventListener('click', () => switchFeed('latest'));
 
   // ---- Post prompt ↔ composer toggle ----
   els.postPromptBtn?.addEventListener('click', openComposer);
