@@ -63,6 +63,8 @@ body{font-family:var(--font-body);color:var(--text);background:var(--bg);min-hei
 .sidebar{position:sticky;top:26px;display:flex;flex-direction:column;gap:6px}
 .brand{display:flex;align-items:center;gap:11px;padding:6px 10px 18px}
 .logo-mark{width:38px;height:38px;border-radius:var(--radius-btn);background:var(--brand-grad);display:flex;align-items:center;justify-content:center;color:var(--surface);font-family:var(--font-head);font-weight:800;font-size:20px;flex:0 0 auto}
+.logo-mark img{width:100%;height:100%;object-fit:contain;border-radius:inherit;display:block}
+.logo-mark:has(img){background:none}
 .brand-name{font-family:var(--font-head);font-weight:800;font-size:21px;letter-spacing:-.02em;color:var(--text)}
 .nav-item{display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:9px;color:var(--text-soft);font-weight:600;font-size:15.5px;cursor:pointer;border:none;background:none;text-align:left;width:100%;transition:background var(--t),color var(--t);font-family:var(--font-body)}
 .nav-item:hover{background:var(--surface-4)}
@@ -321,8 +323,8 @@ img.av{background:var(--surface-4)}
 @keyframes mellow-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #homeView:not(.hidden),#searchView:not(.hidden),#areasView:not(.hidden),#profileView:not(.hidden),#myReportsView:not(.hidden){animation:mellow-in .28s var(--ease-soft) both}
 
-/* Feed tab swap: directional slide between For You / Latest */
-#posts.feed-anim{transition:transform .26s var(--ease-soft),opacity .26s var(--ease-soft)}
+/* Feed tab swap: quick directional crossfade between For You / Latest */
+#posts.feed-anim{transition:transform .17s var(--ease-soft),opacity .17s var(--ease-soft)}
 
 /* Respect users who prefer less motion */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

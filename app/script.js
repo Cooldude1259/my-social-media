@@ -497,29 +497,32 @@
     els.tabLatest.classList.toggle('active', newMode === 'latest');
 
     const el = els.posts;
-    const outX = toLatest ? '-100%' : '100%'; // exit: left for ->Latest, right for ->ForYou
-    const inX = toLatest ? '100%' : '-100%';  // enter from the opposite side
+    // Small directional nudge — the crossfade carries the change, the slide is
+    // just a hint of direction. (A full-width slide of a tall feed feels janky.)
+    const NUDGE = 26;
+    const outX = toLatest ? -NUDGE : NUDGE; // exit: left for ->Latest, right for ->ForYou
+    const inX = toLatest ? NUDGE : -NUDGE;  // enter from the opposite side
 
-    // slide current feed out
+    // fade + nudge the current feed out
     el.classList.add('feed-anim');
-    el.style.transform = `translateX(${outX})`;
+    el.style.transform = `translateX(${outX}px)`;
     el.style.opacity = '0';
-    await once(el, 'transitionend', 320);
+    await once(el, 'transitionend', 220);
 
     // jump to the incoming side (no transition) and put the new feed in place
     el.classList.remove('feed-anim');
-    el.style.transform = `translateX(${inX})`;
+    el.style.transform = `translateX(${inX}px)`;
     void el.offsetWidth; // commit the jump
     // Render from cache instantly (no gap). Only fetch if we have nothing cached.
     const cached = selectedAreaId === null ? feedCache[newMode] : null;
     if (cached) renderInto(el, cached);
     else await loadFeed();
 
-    // slide the new feed in
+    // fade + nudge the new feed in
     el.classList.add('feed-anim');
     el.style.transform = 'translateX(0)';
     el.style.opacity = '1';
-    await once(el, 'transitionend', 320);
+    await once(el, 'transitionend', 240);
 
     el.classList.remove('feed-anim');
     el.style.transform = '';
