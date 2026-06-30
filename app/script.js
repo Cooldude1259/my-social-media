@@ -287,7 +287,11 @@
       els.form?.classList.add('hidden');
     }
   }
-  supabase.auth.onAuthStateChange((_e, session) => { applyAuthState(session).then(() => loadFeed()); });
+  supabase.auth.onAuthStateChange((_e, session) => {
+    // reactions/own-post flags change with the user, so drop the cached feeds
+    feedCache.foryou = null; feedCache.latest = null;
+    applyAuthState(session).then(() => { loadFeed(); prefetchFeeds(); });
+  });
 
   // ---- Normalization ----
   function fromRpc(r) {
@@ -380,18 +384,43 @@
 
   const REST_SELECT = '"post-id", title, content, created_at, area_id, Areas(name, emoji), Users(Name, avatar_url, user_id), Likes(count), Comments(count), PostTags(Tags(name))';
 
-  async function loadForYou() {
+  // In-memory cache of each feed's normalized posts, so switching tabs is
+  // instant (no fetch mid-animation) and the For You order stays stable when
+  // you switch back. null = not loaded yet.
+  const feedCache = { foryou: null, latest: null };
+
+  async function fetchForYou() {
     const { data, error } = await supabase.rpc('get_feed', { lim: 100 });
-    if (error) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; console.error(error); return; }
-    renderInto(els.posts, (data || []).map(fromRpc));
+    if (error) { console.error(error); return null; }
+    return (data || []).map(fromRpc);
   }
-  async function loadLatest() {
+  async function fetchLatest() {
     const { data, error } = await supabase.from('Posts').select(REST_SELECT).neq('status', 'removed').order('created_at', { ascending: false }).limit(100);
-    if (error) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; console.error(error); return; }
+    if (error) { console.error(error); return null; }
     const ids = data.map((p) => p['post-id']);
     const [likedSet, dislikedSet] = await Promise.all([getReactionSet('Likes', 'post_id', ids), getReactionSet('Dislikes', 'post_id', ids)]);
-    renderInto(els.posts, data.map((r) => fromRest(r, likedSet, dislikedSet)));
+    return data.map((r) => fromRest(r, likedSet, dislikedSet));
   }
+
+  async function loadForYou() {
+    const items = await fetchForYou();
+    if (items === null) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; return; }
+    feedCache.foryou = items;
+    renderInto(els.posts, items);
+  }
+  async function loadLatest() {
+    const items = await fetchLatest();
+    if (items === null) { els.posts.innerHTML = '<p class="empty">Could not load the feed.</p>'; return; }
+    feedCache.latest = items;
+    renderInto(els.posts, items);
+  }
+  // Warm the other feed in the background so the first switch is gap-free.
+  function prefetchFeeds() {
+    if (selectedAreaId !== null) return;
+    if (!feedCache.foryou) fetchForYou().then((i) => { if (i) feedCache.foryou = i; });
+    if (!feedCache.latest) fetchLatest().then((i) => { if (i) feedCache.latest = i; });
+  }
+
   function loadFeed() {
     loadAnnouncements();
     if (selectedAreaId !== null) return loadAreaFeed();
@@ -477,11 +506,14 @@
     el.style.opacity = '0';
     await once(el, 'transitionend', 320);
 
-    // jump to the incoming side (no transition) and load the new feed off-screen
+    // jump to the incoming side (no transition) and put the new feed in place
     el.classList.remove('feed-anim');
     el.style.transform = `translateX(${inX})`;
     void el.offsetWidth; // commit the jump
-    await loadFeed();
+    // Render from cache instantly (no gap). Only fetch if we have nothing cached.
+    const cached = selectedAreaId === null ? feedCache[newMode] : null;
+    if (cached) renderInto(el, cached);
+    else await loadFeed();
 
     // slide the new feed in
     el.classList.add('feed-anim');
@@ -1007,4 +1039,5 @@
     await applyAuthState(data.session);
     await loadAreas();
     loadFeed();
+    prefetchFeeds();
   })();
