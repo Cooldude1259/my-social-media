@@ -35,18 +35,9 @@
   };
   // ---- Theming ----
   // applyTheme/setActiveStyle/clearTheme/resetActiveStyle are defined inline in
-  // index.html (no deps, always console-callable). Here we only fetch the saved
-  // style: a locally-chosen one, else the is_default row from the styles table.
-  const STYLE_KEY = 'ce_active_style';
-  async function loadActiveStyle() {
-    try {
-      const cached = localStorage.getItem(STYLE_KEY);
-      if (cached) { window.applyTheme(JSON.parse(cached)); return; }
-    } catch {}
-    const { data, error } = await supabase.from('styles').select('*').eq('is_default', true).limit(1).single();
-    if (!error && data) window.applyTheme(data);
-  }
-  window.loadActiveStyle = loadActiveStyle;
+  // Theming is local-only now (no database/agent). Defaults live in styles.css
+  // (:root tokens); the inline script in index.html re-applies any locally saved
+  // tweak on load, and applyTheme/setActiveStyle stay available in the console.
 
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
@@ -1043,7 +1034,6 @@
 
   // ---- Init ----
   (async () => {
-    loadActiveStyle();
     const { data } = await supabase.auth.getSession();
     await applyAuthState(data.session);
     await loadAreas();

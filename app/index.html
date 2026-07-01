@@ -41,8 +41,7 @@
       }
       function resetActiveStyle() {
         try { localStorage.removeItem(STYLE_KEY); } catch (e) {}
-        clearTheme();
-        if (window.loadActiveStyle) window.loadActiveStyle();
+        clearTheme(); // reverts to the :root defaults in styles.css
       }
       window.applyTheme = applyTheme;
       window.clearTheme = clearTheme;
