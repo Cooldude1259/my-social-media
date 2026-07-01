@@ -183,6 +183,25 @@
   let areas = [];
   let _searchTimer = null;
 
+  // ---- Feedback (Tally) ----
+  // Paste your Tally form id here (the part after tally.so/r/, e.g. 'wgABCD').
+  const TALLY_FORM_ID = 'YOUR_TALLY_FORM_ID';
+  function openFeedback() {
+    // Attach handle (never the real name) + signed-in state so feedback can be triaged.
+    const hidden = {
+      source: 'mellow-app',
+      handle: currentProfile?.Name || '',
+      signedin: authUserId ? 'yes' : 'no',
+    };
+    if (window.Tally && typeof window.Tally.openPopup === 'function') {
+      window.Tally.openPopup(TALLY_FORM_ID, { layout: 'modal', width: 520, autoClose: 1500, hiddenFields: hidden });
+    } else {
+      // Fallback: open the hosted form in a new tab with the same values as query params.
+      const qs = new URLSearchParams(hidden).toString();
+      window.open(`https://tally.so/r/${TALLY_FORM_ID}?${qs}`, '_blank', 'noopener');
+    }
+  }
+
   // ---- Utils ----
   const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 
@@ -1015,6 +1034,7 @@
       if (act === 'save-bio') return saveBio(actEl.dataset.userId, actEl);
       if (act === 'dismiss-ann') { dismiss(parseInt(actEl.dataset.annId, 10)); loadAnnouncements(); return; }
       if (act === 'my-reports') { openMyReports(); return; }
+      if (act === 'feedback') { openFeedback(); return; }
       return;
     }
     // Close open menus when clicking outside

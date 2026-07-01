@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <!-- Tally feedback form (popup embed) -->
+  <script async src="https://tally.so/widgets/embed.js"></script>
   <!-- Theme helpers: defined inline (no module/Supabase deps) so they are
        always callable from the console — applyTheme/setActiveStyle/etc. -->
   <script>
@@ -99,6 +101,7 @@
           <div class="me-sub">You</div>
         </div>
       </div>
+      <button class="signout-btn" data-act="feedback">💬 Send feedback</button>
       <button class="signout-btn hidden" id="signOutBtn">Sign out</button>
       <!-- kept hidden for JS compat -->
       <button class="hidden" id="myReportsBtn"></button>
