@@ -82,7 +82,9 @@
   const navIds = { home: 'navHome', search: 'navSearch', areas: 'navAreas', profile: 'navProfile' };
   let currentScreen = 'home';
 
-  function showScreen(name) {
+  // Pure view switch — no content-loading side effects, so it's safe to call
+  // from content loaders (e.g. openProfile) without recursing.
+  function activateScreen(name) {
     currentScreen = name;
     SCREENS.forEach((s) => screenViews[s]?.classList.add('hidden'));
     screenViews[name]?.classList.remove('hidden');
@@ -94,6 +96,10 @@
     document.querySelectorAll('.tab-item[data-screen]').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.screen === name);
     });
+  }
+
+  function showScreen(name) {
+    activateScreen(name);
     if (name === 'home') { loadFeed(); }
     if (name === 'search') { setTimeout(() => els.searchInput?.focus(), 50); }
     if (name === 'areas') { renderAreasGrid(); }
@@ -899,7 +905,7 @@
   }
 
   async function openProfile(userId) {
-    showScreen('profile');
+    activateScreen('profile'); // switch view without re-triggering openSelfProfile
     els.profileBody.innerHTML = '<p class="empty">Loading profile…</p>';
     const { data: prof, error } = await supabase.from('Users').select('"creator-id", Name, avatar_url, bio, user_id').eq('user_id', userId).single();
     if (error || !prof) { els.profileBody.innerHTML = '<p class="empty">Profile not found.</p>'; return; }
