@@ -35,18 +35,9 @@
   };
   // ---- Theming ----
   // applyTheme/setActiveStyle/clearTheme/resetActiveStyle are defined inline in
-  // index.html (no deps, always console-callable). Here we only fetch the saved
-  // style: a locally-chosen one, else the is_default row from the styles table.
-  const STYLE_KEY = 'ce_active_style';
-  async function loadActiveStyle() {
-    try {
-      const cached = localStorage.getItem(STYLE_KEY);
-      if (cached) { window.applyTheme(JSON.parse(cached)); return; }
-    } catch {}
-    const { data, error } = await supabase.from('styles').select('*').eq('is_default', true).limit(1).single();
-    if (!error && data) window.applyTheme(data);
-  }
-  window.loadActiveStyle = loadActiveStyle;
+  // Theming is local-only now (no database/agent). Defaults live in styles.css
+  // (:root tokens); the inline script in index.html re-applies any locally saved
+  // tweak on load, and applyTheme/setActiveStyle stay available in the console.
 
   function areaColor(name) { return AREA_COLORS[(name || '').toLowerCase()] || '#0ea98f'; }
   function areaBlurb(name) { return AREA_BLURBS[(name || '').toLowerCase()] || 'Explore this area'; }
@@ -191,6 +182,25 @@
   let selectedAreaId = null;
   let areas = [];
   let _searchTimer = null;
+
+  // ---- Feedback (Tally) ----
+  // Paste your Tally form id here (the part after tally.so/r/, e.g. 'wgABCD').
+  const TALLY_FORM_ID = 'YOUR_TALLY_FORM_ID';
+  function openFeedback() {
+    // Attach handle (never the real name) + signed-in state so feedback can be triaged.
+    const hidden = {
+      source: 'mellow-app',
+      handle: currentProfile?.Name || '',
+      signedin: authUserId ? 'yes' : 'no',
+    };
+    if (window.Tally && typeof window.Tally.openPopup === 'function') {
+      window.Tally.openPopup(TALLY_FORM_ID, { layout: 'modal', width: 520, autoClose: 1500, hiddenFields: hidden });
+    } else {
+      // Fallback: open the hosted form in a new tab with the same values as query params.
+      const qs = new URLSearchParams(hidden).toString();
+      window.open(`https://tally.so/r/${TALLY_FORM_ID}?${qs}`, '_blank', 'noopener');
+    }
+  }
 
   // ---- Utils ----
   const esc = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
@@ -1024,6 +1034,7 @@
       if (act === 'save-bio') return saveBio(actEl.dataset.userId, actEl);
       if (act === 'dismiss-ann') { dismiss(parseInt(actEl.dataset.annId, 10)); loadAnnouncements(); return; }
       if (act === 'my-reports') { openMyReports(); return; }
+      if (act === 'feedback') { openFeedback(); return; }
       return;
     }
     // Close open menus when clicking outside
@@ -1043,7 +1054,6 @@
 
   // ---- Init ----
   (async () => {
-    loadActiveStyle();
     const { data } = await supabase.auth.getSession();
     await applyAuthState(data.session);
     await loadAreas();

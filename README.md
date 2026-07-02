@@ -40,8 +40,6 @@ my-social-media/
 │   ├── index.html              # The app shell (UI markup + inline theme helpers)
 │   ├── script.js               # App logic (Supabase, feed, profiles, theming)
 │   ├── styles.css              # Tokenised stylesheet (:root design tokens)
-│   ├── styles.schema.sql       # Snapshot of the `styles` table
-│   ├── THEME_API.md            # Agent contract for generating a style
 │   ├── admin.html / admin.js   # Admin tools
 ├── docs/
 │   └── AGE_TIERS_SPEC.md       # Age-tier & regional-policy design spec
@@ -55,17 +53,15 @@ my-social-media/
 ## Theming
 
 Every colour, font, radius and shadow is a CSS custom property defined in
-`:root` (`app/styles.css`). A **style** is just a set of values for those
-tokens, stored as one row in the Supabase `styles` table (one column per token).
+`:root` (`app/styles.css`). Change a token once and it updates everywhere it's
+used — no more hunting down 20 hardcoded copies. Theming is entirely local; no
+database or agent is involved.
 
-- `applyTheme(row)` writes a style onto `:root` at runtime; omitted tokens keep
-  their defaults. It's defined inline in `app/index.html`, so it's always
-  callable from the browser console.
-- `setActiveStyle(row)` applies and remembers a style on the device;
-  `resetActiveStyle()` reverts to the default.
-- The client loads the `is_default` style on startup.
-- See `app/THEME_API.md` for the full token reference and the contract an agent
-  follows to produce a style.
+- `applyTheme({ primary: '#7c3aed', ... })` writes token values onto `:root` at
+  runtime; omitted tokens keep their `styles.css` defaults. It's defined inline
+  in `app/index.html`, so it's always callable from the browser console.
+- `setActiveStyle(row)` applies and remembers a tweak on the device (localStorage);
+  `resetActiveStyle()` reverts to the `styles.css` defaults.
 
 ## Getting started
 
